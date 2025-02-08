@@ -82,7 +82,7 @@
   <!-- Ticket Booking Modal -->
   <div id="ticket-modal" class="modal">
     <div class="modal-content">
-      <span id="close-modal" class="close">&times;</span>
+      <span id="close-ticket-modal" class="close">&times;</span>
       <h2>Book Ticket</h2>
       <div id="modal-event-info">
         <!-- Selected event info will appear here -->
@@ -97,6 +97,34 @@
           <input type="email" id="buyer-email" required />
         </div>
         <button type="submit">Confirm Booking</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-edit-modal" class="close">&times;</span>
+      <h2>Edit Event</h2>
+      <form id="edit-event-form">
+        <input type="hidden" id="edit-event-id" />
+        <div class="form-group">
+          <label for="edit-event-name">Event Name:</label>
+          <input type="text" id="edit-event-name" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-date">Date:</label>
+          <input type="date" id="edit-event-date" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-description">Description:</label>
+          <textarea id="edit-event-description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-ticket-price">Ticket Price:</label>
+          <input type="number" id="edit-ticket-price" required />
+        </div>
+        <button type="submit">Save Changes</button>
       </form>
     </div>
   </div>

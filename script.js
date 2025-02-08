@@ -7,10 +7,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const ticketsSoldEl = document.getElementById("tickets-sold");
     const upcomingEventsEl = document.getElementById("upcoming-events");
   
+    // Ticket Booking Modal Elements
     const ticketModal = document.getElementById("ticket-modal");
-    const closeModalBtn = document.getElementById("close-modal");
+    const closeTicketModalBtn = document.getElementById("close-ticket-modal");
     const ticketForm = document.getElementById("ticket-form");
     const modalEventInfo = document.getElementById("modal-event-info");
+  
+    // Edit Event Modal Elements
+    const editModal = document.getElementById("edit-modal");
+    const closeEditModalBtn = document.getElementById("close-edit-modal");
+    const editEventForm = document.getElementById("edit-event-form");
+    const editEventIdInput = document.getElementById("edit-event-id");
+    const editEventNameInput = document.getElementById("edit-event-name");
+    const editEventDateInput = document.getElementById("edit-event-date");
+    const editEventDescriptionInput = document.getElementById("edit-event-description");
+    const editTicketPriceInput = document.getElementById("edit-ticket-price");
   
     // Data store for events and tickets
     let events = [];
@@ -33,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <p>${event.description}</p>
         <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
         <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
+        <button class="edit-event" data-id="${event.id}">Edit Event</button>
         <button class="delete-event" data-id="${event.id}">Delete Event</button>
       `;
       return card;
@@ -71,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
       createEventForm.reset();
     });
   
-    // Delegate click events for booking tickets and deleting events
+    // Delegate click events for booking, editing, and deleting events
     eventsFeed.addEventListener("click", (e) => {
       const eventId = e.target.getAttribute("data-id");
   
@@ -85,10 +97,17 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Handle delete event button click
       if (e.target.classList.contains("delete-event")) {
-        // Remove the event from the events array
         events = events.filter((ev) => ev.id != eventId);
         renderEvents();
         updateDashboard();
+      }
+  
+      // Handle edit event button click
+      if (e.target.classList.contains("edit-event")) {
+        const eventObj = events.find((ev) => ev.id == eventId);
+        if (eventObj) {
+          openEditModal(eventObj);
+        }
       }
     });
   
@@ -103,8 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ticketModal.dataset.eventId = eventObj.id;
     }
   
-    // Close the modal when the close button is clicked
-    closeModalBtn.addEventListener("click", () => {
+    // Close the ticket modal when the close button is clicked
+    closeTicketModalBtn.addEventListener("click", () => {
       ticketModal.style.display = "none";
       ticketForm.reset();
     });
@@ -114,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const buyerName = document.getElementById("buyer-name").value;
       const buyerEmail = document.getElementById("buyer-email").value;
-      // Simulate ticket booking confirmation (you can integrate with your backend here)
+      // Simulate ticket booking confirmation (integration with backend can be added here)
       alert(
         `Ticket booked successfully for ${buyerName}!\nConfirmation sent to ${buyerEmail}.`
       );
@@ -122,6 +141,50 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDashboard();
       ticketModal.style.display = "none";
       ticketForm.reset();
+    });
+  
+    // Open the edit modal and pre-fill the form with event details
+    function openEditModal(eventObj) {
+      editEventIdInput.value = eventObj.id;
+      editEventNameInput.value = eventObj.name;
+      editEventDateInput.value = eventObj.date;
+      editEventDescriptionInput.value = eventObj.description;
+      editTicketPriceInput.value = eventObj.ticketPrice;
+      editModal.style.display = "block";
+    }
+  
+    // Close the edit modal when the close button is clicked
+    closeEditModalBtn.addEventListener("click", () => {
+      editModal.style.display = "none";
+      editEventForm.reset();
+    });
+  
+    // Handle edit event form submission
+    editEventForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = editEventIdInput.value;
+      const updatedName = editEventNameInput.value;
+      const updatedDate = editEventDateInput.value;
+      const updatedDescription = editEventDescriptionInput.value;
+      const updatedTicketPrice = editTicketPriceInput.value;
+  
+      // Update the event in the events array
+      events = events.map((ev) => {
+        if (ev.id == id) {
+          return {
+            ...ev,
+            name: updatedName,
+            date: updatedDate,
+            description: updatedDescription,
+            ticketPrice: updatedTicketPrice,
+          };
+        }
+        return ev;
+      });
+      renderEvents();
+      updateDashboard();
+      editModal.style.display = "none";
+      editEventForm.reset();
     });
   
     // Initial dashboard update
