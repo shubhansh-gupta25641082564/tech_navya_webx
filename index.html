@@ -1,327 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EventSphere</title>
-  <!-- FullCalendar CSS (if using Calendar Integration) -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-  <!-- Leaflet CSS for Map Integration (if needed in future) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-sA+e+OaZ+xyA3nI+x84s6v7cGXLM5I9dwXq7jB6J+9Y=" crossorigin=""/>
-  <!-- Google Font for a modern look -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventSphere</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <!-- FullCalendar CSS (if using Calendar Integration) -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+    <!-- Leaflet CSS for Map Integration (if needed in future) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-sA+e+OaZ+xyA3nI+x84s6v7cGXLM5I9dwXq7jB6J+9Y=" crossorigin="" />
+    <!-- Google Font for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <!-- Header with User Authentication -->
-  <header>
+    <!-- Header -->
+    <!-- <header>
     <h1>EventSphere</h1>
-    <div id="user-auth">
-      <button id="login-btn">Login</button>
-      <button id="register-btn">Register</button>
+  </header> -->
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <header>
+            <a href="#" class="EventSphere">EventSphere</a>
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#discover">Discover</a></li>
+                    <li><a href="#create-event">Create Event</a></li>
+                    <li><a href="#tickets">Tickets</a></li>
+                    <li><a href="#calendar">Calendar</a></li>
+                </ul>
+            </nav>
+            <img id="theme-toggle" src="sunpng.png" alt="Light Mode"
+                style="cursor: pointer; width: 30px; height: 30px;">
+            <div id="user-auth">
+                <button id="login-btn">Login</button>
+                <button id="register-btn">Register</button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard">
+                <h2>Dashboard</h2>
+                <div class="stats">
+                    <div class="card">
+                        <h3>Total Events</h3>
+                        <p id="total-events">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Tickets Sold</h3>
+                        <p id="tickets-sold">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Upcoming Events</h3>
+                        <p id="upcoming-events">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total RSVPs</h3>
+                        <p id="total-rsvps">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Event Creation Section -->
+            <section id="create-event">
+                <h2>Create Event</h2>
+                <form id="create-event-form">
+                    <div class="form-group">
+                        <label for="event-name">Event Name:</label>
+                        <input type="text" id="event-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="event-date">Date:</label>
+                        <input type="date" id="event-date" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="event-description">Description:</label>
+                        <textarea id="event-description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-price">Ticket Price:</label>
+                        <input type="number" id="ticket-price" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="event-category">Category:</label>
+                        <select id="event-category" required>
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="music">Music</option>
+                            <option value="technology">Technology</option>
+                            <option value="art">Art</option>
+                            <option value="sports">Sports</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <!-- NEW: Location Field -->
+                    <div class="form-group">
+                        <label for="event-location">Location (Address):</label>
+                        <input type="text" id="event-location" required />
+                    </div>
+                    <!-- Image Upload Field -->
+                    <div class="form-group">
+                        <label for="event-image">Event Image:</label>
+                        <input type="file" id="event-image" accept="image/*" />
+                    </div>
+                    <button type="submit">Create Event</button>
+                </form>
+            </section>
+
+            <!-- Discover Events Section -->
+            <section id="discover">
+                <h2>Discover Events</h2>
+                <div class="search-filter" style="margin-top: 20px;">
+                    <input type="text" id="search-input" placeholder="Search events..." />
+                    <select id="filter-status">
+                        <option value="all">All Events</option>
+                        <option value="upcoming">Upcoming Events</option>
+                        <option value="current">Current Events</option>
+                        <option value="past">Past Events</option>
+                    </select>
+                    <select id="filter-category">
+                        <option value="all">All Categories</option>
+                        <option value="music">Music</option>
+                        <option value="technology">Technology</option>
+                        <option value="art">Art</option>
+                        <option value="sports">Sports</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div id="events-feed" class="events-feed">
+                    <!-- Event cards will be added dynamically here -->
+                </div>
+            </section>
+
+            <!-- Calendar Section -->
+            <section id="calendar">
+                <h2>Calendar</h2>
+                <div id="calendar-container" style="margin-top: 20px;"></div>
+            </section>
+        </main>
     </div>
-  </header>
 
-  <!-- Main Container -->
-  <div class="container">
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-      <ul>
-        <li><a href="#dashboard">Dashboard</a></li>
-        <li><a href="#discover">Discover</a></li>
-        <li><a href="#create-event">Create Event</a></li>
-        <li><a href="#tickets">Tickets</a></li>
-        <li><a href="#calendar">Calendar</a></li>
-      </ul>
-    </nav>
-
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Dashboard Section -->
-      <section id="dashboard">
-        <h2>Dashboard</h2>
-        <div class="stats">
-          <div class="card">
-            <h3>Total Events</h3>
-            <p id="total-events">0</p>
-          </div>
-          <div class="card">
-            <h3>Tickets Sold</h3>
-            <p id="tickets-sold">0</p>
-          </div>
-          <div class="card">
-            <h3>Upcoming Events</h3>
-            <p id="upcoming-events">0</p>
-          </div>
-          <div class="card">
-            <h3>Total RSVPs</h3>
-            <p id="total-rsvps">0</p>
-          </div>
+    <!-- Ticket Booking Modal -->
+    <div id="ticket-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-ticket-modal" class="close">&times;</span>
+            <h2>Book Ticket</h2>
+            <div id="modal-event-info"></div>
+            <form id="ticket-form">
+                <div class="form-group">
+                    <label for="buyer-name">Your Name:</label>
+                    <input type="text" id="buyer-name" required />
+                </div>
+                <div class="form-group">
+                    <label for="buyer-email">Email:</label>
+                    <input type="email" id="buyer-email" required />
+                </div>
+                <button type="submit">Confirm Booking</button>
+            </form>
         </div>
-      </section>
-
-      <!-- Event Creation Section -->
-      <section id="create-event">
-        <h2>Create Event</h2>
-        <form id="create-event-form">
-          <div class="form-group">
-            <label for="event-name">Event Name:</label>
-            <input type="text" id="event-name" required />
-          </div>
-          <div class="form-group">
-            <label for="event-date">Date:</label>
-            <input type="date" id="event-date" required />
-          </div>
-          <div class="form-group">
-            <label for="event-description">Description:</label>
-            <textarea id="event-description" rows="3" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="ticket-price">Ticket Price:</label>
-            <input type="number" id="ticket-price" required />
-          </div>
-          <div class="form-group">
-            <label for="event-category">Category:</label>
-            <select id="event-category" required>
-              <option value="" disabled selected>Select Category</option>
-              <option value="music">Music</option>
-              <option value="technology">Technology</option>
-              <option value="art">Art</option>
-              <option value="sports">Sports</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <!-- NEW: Location Field -->
-          <div class="form-group">
-            <label for="event-location">Location (Address):</label>
-            <input type="text" id="event-location" required />
-          </div>
-          <!-- Image Upload Field -->
-          <div class="form-group">
-            <label for="event-image">Event Image:</label>
-            <input type="file" id="event-image" accept="image/*" />
-          </div>
-          <button type="submit">Create Event</button>
-        </form>
-      </section>
-
-      <!-- Discover Events Section -->
-      <section id="discover">
-        <h2>Discover Events</h2>
-        <div class="search-filter">
-          <input type="text" id="search-input" placeholder="Search events..." />
-          <select id="filter-status">
-            <option value="all">All Events</option>
-            <option value="upcoming">Upcoming Events</option>
-            <option value="current">Current Events</option>
-            <option value="past">Past Events</option>
-          </select>
-          <select id="filter-category">
-            <option value="all">All Categories</option>
-            <option value="music">Music</option>
-            <option value="technology">Technology</option>
-            <option value="art">Art</option>
-            <option value="sports">Sports</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div id="events-feed" class="events-feed">
-          <!-- Event cards will be added dynamically here -->
-        </div>
-      </section>
-
-      <!-- Calendar Section -->
-      <section id="calendar">
-        <h2>Calendar</h2>
-        <div id="calendar-container"></div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Ticket Booking Modal -->
-  <div id="ticket-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-ticket-modal" class="close">&times;</span>
-      <h2>Book Ticket</h2>
-      <div id="modal-event-info"></div>
-      <form id="ticket-form">
-        <div class="form-group">
-          <label for="buyer-name">Your Name:</label>
-          <input type="text" id="buyer-name" required />
-        </div>
-        <div class="form-group">
-          <label for="buyer-email">Email:</label>
-          <input type="email" id="buyer-email" required />
-        </div>
-        <button type="submit">Confirm Booking</button>
-      </form>
     </div>
-  </div>
 
-  <!-- Edit Event Modal -->
-  <div id="edit-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-edit-modal" class="close">&times;</span>
-      <h2>Edit Event</h2>
-      <form id="edit-event-form">
-        <input type="hidden" id="edit-event-id" />
-        <div class="form-group">
-          <label for="edit-event-name">Event Name:</label>
-          <input type="text" id="edit-event-name" required />
+    <!-- Edit Event Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-edit-modal" class="close">&times;</span>
+            <h2>Edit Event</h2>
+            <form id="edit-event-form">
+                <input type="hidden" id="edit-event-id" />
+                <div class="form-group">
+                    <label for="edit-event-name">Event Name:</label>
+                    <input type="text" id="edit-event-name" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-event-date">Date:</label>
+                    <input type="date" id="edit-event-date" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-event-description">Description:</label>
+                    <textarea id="edit-event-description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-ticket-price">Ticket Price:</label>
+                    <input type="number" id="edit-ticket-price" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-event-category">Category:</label>
+                    <select id="edit-event-category" required>
+                        <option value="" disabled>Select Category</option>
+                        <option value="music">Music</option>
+                        <option value="technology">Technology</option>
+                        <option value="art">Art</option>
+                        <option value="sports">Sports</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <!-- Image Upload Field for Editing -->
+                <div class="form-group">
+                    <label for="edit-event-image">Event Image:</label>
+                    <input type="file" id="edit-event-image" accept="image/*" />
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="edit-event-date">Date:</label>
-          <input type="date" id="edit-event-date" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-event-description">Description:</label>
-          <textarea id="edit-event-description" rows="3" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="edit-ticket-price">Ticket Price:</label>
-          <input type="number" id="edit-ticket-price" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-event-category">Category:</label>
-          <select id="edit-event-category" required>
-            <option value="" disabled>Select Category</option>
-            <option value="music">Music</option>
-            <option value="technology">Technology</option>
-            <option value="art">Art</option>
-            <option value="sports">Sports</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <!-- Image Upload Field for Editing -->
-        <div class="form-group">
-          <label for="edit-event-image">Event Image:</label>
-          <input type="file" id="edit-event-image" accept="image/*" />
-        </div>
-        <button type="submit">Save Changes</button>
-      </form>
     </div>
-  </div>
 
-  <!-- RSVP Modal -->
-  <div id="rsvp-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-rsvp-modal" class="close">&times;</span>
-      <h2>RSVP to Event</h2>
-      <div id="rsvp-modal-info"></div>
-      <form id="rsvp-form">
-        <div class="form-group">
-          <label for="rsvp-name">Your Name:</label>
-          <input type="text" id="rsvp-name" required />
+    <!-- RSVP Modal -->
+    <div id="rsvp-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-rsvp-modal" class="close">&times;</span>
+            <h2>RSVP to Event</h2>
+            <div id="rsvp-modal-info"></div>
+            <form id="rsvp-form">
+                <div class="form-group">
+                    <label for="rsvp-name">Your Name:</label>
+                    <input type="text" id="rsvp-name" required />
+                </div>
+                <div class="form-group">
+                    <label for="rsvp-email">Email:</label>
+                    <input type="email" id="rsvp-email" required />
+                </div>
+                <button type="submit">Submit RSVP</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="rsvp-email">Email:</label>
-          <input type="email" id="rsvp-email" required />
-        </div>
-        <button type="submit">Submit RSVP</button>
-      </form>
     </div>
-  </div>
 
-  <!-- Review Modal -->
-  <div id="review-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-review-modal" class="close">&times;</span>
-      <h2>Leave a Review</h2>
-      <div id="review-modal-info"></div>
-      <form id="review-form">
-        <div class="form-group">
-          <label for="review-rating">Rating (1-5):</label>
-          <select id="review-rating" required>
-            <option value="" disabled selected>Select Rating</option>
-            <option value="1">1 - Very Poor</option>
-            <option value="2">2 - Poor</option>
-            <option value="3">3 - Average</option>
-            <option value="4">4 - Good</option>
-            <option value="5">5 - Excellent</option>
-          </select>
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-review-modal" class="close">&times;</span>
+            <h2>Leave a Review</h2>
+            <div id="review-modal-info"></div>
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="review-rating">Rating (1-5):</label>
+                    <select id="review-rating" required>
+                        <option value="" disabled selected>Select Rating</option>
+                        <option value="1">1 - Very Poor</option>
+                        <option value="2">2 - Poor</option>
+                        <option value="3">3 - Average</option>
+                        <option value="4">4 - Good</option>
+                        <option value="5">5 - Excellent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="review-text">Review:</label>
+                    <textarea id="review-text" rows="3" required></textarea>
+                </div>
+                <button type="submit">Submit Review</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="review-text">Review:</label>
-          <textarea id="review-text" rows="3" required></textarea>
-        </div>
-        <button type="submit">Submit Review</button>
-      </form>
     </div>
-  </div>
 
-  <!-- Chat/Discussion Modal -->
-  <div id="chat-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-chat-modal" class="close">&times;</span>
-      <h2>Event Discussion</h2>
-      <div id="chat-messages"></div>
-      <form id="chat-form">
-        <div class="form-group">
-          <label for="chat-message">Your Message:</label>
-          <textarea id="chat-message" rows="2" required></textarea>
+    <!-- Chat/Discussion Modal -->
+    <div id="chat-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-chat-modal" class="close">&times;</span>
+            <h2>Event Discussion</h2>
+            <div id="chat-messages"></div>
+            <form id="chat-form">
+                <div class="form-group">
+                    <label for="chat-message">Your Message:</label>
+                    <textarea id="chat-message" rows="2" required></textarea>
+                </div>
+                <button type="submit">Send Message</button>
+            </form>
         </div>
-        <button type="submit">Send Message</button>
-      </form>
     </div>
-  </div>
 
-  <!-- NEW: Map Modal -->
-  <div id="map-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-map-modal" class="close">&times;</span>
-      <h2>Event Location Map</h2>
-      <div id="map"></div>
+    <!-- NEW: Map Modal -->
+    <div id="map-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-map-modal" class="close">&times;</span>
+            <h2>Event Location Map</h2>
+            <div id="map"></div>
+        </div>
     </div>
-  </div>
 
-  <!-- Login Modal -->
-  <div id="login-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-login-modal" class="close">&times;</span>
-      <h2>Login</h2>
-      <form id="login-form">
-        <div class="form-group">
-          <label for="login-email">Email:</label>
-          <input type="email" id="login-email" required />
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-login-modal" class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" required />
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" required />
+                </div>
+                <button type="submit">Login</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="login-password">Password:</label>
-          <input type="password" id="login-password" required />
-        </div>
-        <button type="submit">Login</button>
-      </form>
     </div>
-  </div>
 
-  <!-- Register Modal -->
-  <div id="register-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-register-modal" class="close">&times;</span>
-      <h2>Register</h2>
-      <form id="register-form">
-        <div class="form-group">
-          <label for="register-name">Name:</label>
-          <input type="text" id="register-name" required />
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-register-modal" class="close">&times;</span>
+            <h2>Register</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Name:</label>
+                    <input type="text" id="register-name" required />
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email:</label>
+                    <input type="email" id="register-email" required />
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password:</label>
+                    <input type="password" id="register-password" required />
+                </div>
+                <button type="submit">Register</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="register-email">Email:</label>
-          <input type="email" id="register-email" required />
-        </div>
-        <div class="form-group">
-          <label for="register-password">Password:</label>
-          <input type="password" id="register-password" required />
-        </div>
-        <button type="submit">Register</button>
-      </form>
     </div>
-  </div>
 
-  <!-- FullCalendar JS (if using Calendar Integration) -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <!-- Leaflet JS for Map Integration -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Dotd70R3H8k3z6BpoXv3FRP46TCW5nH/TJDbbCXGgN0=" crossorigin=""></script>
-  <script src="script.js"></script>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Dotd70R3H8k3z6BpoXv3FRP46TCW5nH/TJDbbCXGgN0=" crossorigin=""></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
