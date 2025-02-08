@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransitFlow - Smart Public Transport Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      background: #f4f4f9;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 30%;
+      background: #0A2342;
+      color: white;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .route-card {
+      background: #2A9D8F;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .route-card:hover {
+      background: #21867A;
+    }
+
+    .map-container {
+      width: 70%;
+      height: 100vh;
+    }
+
+    #map {
+      height: 100%;
+    }
+
+    .floating-toolkit {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .toolkit-btn {
+      background: #FFD700;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .toolkit-btn:hover {
+      background: #E6C200;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar for Route Planning -->
+    <div class="sidebar">
+      <h1>TransitFlow</h1>
+      <input type="text" class="search-bar" placeholder="Where to?" />
+      <div class="route-card" onclick="showRoute('Fastest Route')">
+        <strong>Fastest Route</strong>
+        <p>20 mins · ₹50</p>
+      </div>
+      <div class="route-card" onclick="showRoute('Cheapest Route')">
+        <strong>Cheapest Route</strong>
+        <p>30 mins · ₹30</p>
+      </div>
+      <div class="route-card" onclick="showRoute('Comfort Route')">
+        <strong>Comfort Route</strong>
+        <p>25 mins · ₹70</p>
+      </div>
+    </div>
+
+    <!-- Interactive Map -->
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+
+    <!-- Floating Action Toolkit -->
+    <div class="floating-toolkit">
+      <button class="toolkit-btn" onclick="toggleAR()">AR</button>
+      <button class="toolkit-btn" onclick="showEmergency()">🚨</button>
+      <button class="toolkit-btn" onclick="followRoute()">📍</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Initialize Map
+    const map = L.map('map').setView([12.9716, 77.5946], 13); // Default to Bangalore
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add a sample marker
+    const marker = L.marker([12.9716, 77.5946]).addTo(map)
+      .bindPopup('Central Station')
+      .openPopup();
+
+    // Route Planner Functions
+    function showRoute(routeName) {
+      alert(`Selected: ${routeName}`);
+      // Add logic to highlight route on the map
+    }
+
+    // Floating Toolkit Functions
+    function toggleAR() {
+      alert('AR Mode Activated');
+    }
+
+    function showEmergency() {
+      alert('Nearest Emergency Services: 2 km');
+    }
+
+    function followRoute() {
+      alert('Following your route...');
+    }
+  </script>
+</body>
+</html>
