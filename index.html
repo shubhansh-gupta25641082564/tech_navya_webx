@@ -65,6 +65,17 @@
             <label for="ticket-price">Ticket Price:</label>
             <input type="number" id="ticket-price" required />
           </div>
+          <div class="form-group">
+            <label for="event-category">Category:</label>
+            <select id="event-category" required>
+              <option value="" disabled selected>Select Category</option>
+              <option value="music">Music</option>
+              <option value="technology">Technology</option>
+              <option value="art">Art</option>
+              <option value="sports">Sports</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <button type="submit">Create Event</button>
         </form>
       </section>
@@ -79,6 +90,14 @@
             <option value="upcoming">Upcoming Events</option>
             <option value="current">Current Events</option>
             <option value="past">Past Events</option>
+          </select>
+          <select id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="music">Music</option>
+            <option value="technology">Technology</option>
+            <option value="art">Art</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
           </select>
         </div>
         <div id="events-feed" class="events-feed">
@@ -132,6 +151,17 @@
         <div class="form-group">
           <label for="edit-ticket-price">Ticket Price:</label>
           <input type="number" id="edit-ticket-price" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-category">Category:</label>
+          <select id="edit-event-category" required>
+            <option value="" disabled>Select Category</option>
+            <option value="music">Music</option>
+            <option value="technology">Technology</option>
+            <option value="art">Art</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+          </select>
         </div>
         <button type="submit">Save Changes</button>
       </form>

@@ -22,10 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const editEventDateInput = document.getElementById("edit-event-date");
     const editEventDescriptionInput = document.getElementById("edit-event-description");
     const editTicketPriceInput = document.getElementById("edit-ticket-price");
+    const editEventCategorySelect = document.getElementById("edit-event-category");
   
     // Search and Filter Controls
     const searchInput = document.getElementById("search-input");
     const filterStatusSelect = document.getElementById("filter-status");
+    const filterCategorySelect = document.getElementById("filter-category");
   
     // Data store for events and tickets
     let events = [];
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
       const todayNoTime = getTodayNoTime();
-      // Upcoming events: events scheduled after today (current events excluded)
+      // Upcoming events: only events scheduled after today (current events excluded)
       upcomingEventsEl.textContent = events.filter(ev => {
         const eventDate = new Date(ev.date + "T00:00:00");
         return eventDate > todayNoTime;
@@ -58,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="event-date">${event.date}</p>
         <p>${event.description}</p>
         <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
+        <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
         <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
         <button class="edit-event" data-id="${event.id}">Edit Event</button>
         <button class="delete-event" data-id="${event.id}">Delete Event</button>
@@ -65,13 +68,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return card;
     }
   
-    // Render events with search and filtering applied
+    // Render events with search, status, and category filtering applied
     function renderEvents() {
       const searchQuery = searchInput.value.toLowerCase();
       const filterStatus = filterStatusSelect.value;
+      const filterCategory = filterCategorySelect.value;
       let filteredEvents = events;
   
-      // Filter events based on search query (matches name or description)
+      // Filter based on search query (name or description)
       if (searchQuery) {
         filteredEvents = filteredEvents.filter(ev =>
           ev.name.toLowerCase().includes(searchQuery) ||
@@ -81,25 +85,27 @@ document.addEventListener("DOMContentLoaded", () => {
   
       const todayNoTime = getTodayNoTime();
   
-      // Filter events based on status
+      // Filter based on status: upcoming, current, or past
       if (filterStatus === "upcoming") {
-        // Upcoming: only events after today (current events excluded)
         filteredEvents = filteredEvents.filter(ev => {
           const eventDate = new Date(ev.date + "T00:00:00");
           return eventDate > todayNoTime;
         });
       } else if (filterStatus === "current") {
-        // Current: only events scheduled for today
         filteredEvents = filteredEvents.filter(ev => {
           const eventDate = new Date(ev.date + "T00:00:00");
           return eventDate.getTime() === todayNoTime.getTime();
         });
       } else if (filterStatus === "past") {
-        // Past: only events before today
         filteredEvents = filteredEvents.filter(ev => {
           const eventDate = new Date(ev.date + "T00:00:00");
           return eventDate < todayNoTime;
         });
+      }
+  
+      // Filter based on event category if not "all"
+      if (filterCategory !== "all") {
+        filteredEvents = filteredEvents.filter(ev => ev.category === filterCategory);
       }
       
       // Clear and render filtered events
@@ -117,14 +123,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const date = document.getElementById("event-date").value;
       const description = document.getElementById("event-description").value;
       const ticketPrice = document.getElementById("ticket-price").value;
+      const category = document.getElementById("event-category").value;
   
-      // Create an event object with a unique ID
+      // Create an event object with a unique ID and the selected category
       const eventObj = {
         id: Date.now(),
         name,
         date,
         description,
         ticketPrice,
+        category
       };
   
       // Add new event to the beginning of the events array
@@ -168,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <p><strong>Event:</strong> ${eventObj.name}</p>
         <p><strong>Date:</strong> ${eventObj.date}</p>
         <p><strong>Price:</strong> $${eventObj.ticketPrice}</p>
+        <p><strong>Category:</strong> ${eventObj.category.charAt(0).toUpperCase() + eventObj.category.slice(1)}</p>
       `;
       ticketModal.style.display = "block";
       ticketModal.dataset.eventId = eventObj.id;
@@ -201,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editEventDateInput.value = eventObj.date;
       editEventDescriptionInput.value = eventObj.description;
       editTicketPriceInput.value = eventObj.ticketPrice;
+      editEventCategorySelect.value = eventObj.category;
       editModal.style.display = "block";
     }
   
@@ -218,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const updatedDate = editEventDateInput.value;
       const updatedDescription = editEventDescriptionInput.value;
       const updatedTicketPrice = editTicketPriceInput.value;
+      const updatedCategory = editEventCategorySelect.value;
   
       // Update the event in the events array
       events = events.map(ev => {
@@ -228,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
             date: updatedDate,
             description: updatedDescription,
             ticketPrice: updatedTicketPrice,
+            category: updatedCategory
           };
         }
         return ev;
@@ -241,6 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners for search and filter controls
     searchInput.addEventListener("input", renderEvents);
     filterStatusSelect.addEventListener("change", renderEvents);
+    filterCategorySelect.addEventListener("change", renderEvents);
   
     // Initial dashboard update
     updateDashboard();
