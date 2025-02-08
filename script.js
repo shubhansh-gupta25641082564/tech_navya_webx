@@ -23,14 +23,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const editEventDescriptionInput = document.getElementById("edit-event-description");
     const editTicketPriceInput = document.getElementById("edit-ticket-price");
   
+    // Search and Filter Controls
+    const searchInput = document.getElementById("search-input");
+    const filterStatusSelect = document.getElementById("filter-status");
+  
     // Data store for events and tickets
     let events = [];
     let ticketsSold = 0;
   
+    // Utility: Create a date object for today with no time (midnight)
+    function getTodayNoTime() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+  
     // Update the dashboard stats
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
-      upcomingEventsEl.textContent = events.length; // Simplified as "upcoming" count
+      const todayNoTime = getTodayNoTime();
+      // Upcoming events: events scheduled after today (current events excluded)
+      upcomingEventsEl.textContent = events.filter(ev => {
+        const eventDate = new Date(ev.date + "T00:00:00");
+        return eventDate > todayNoTime;
+      }).length;
       ticketsSoldEl.textContent = ticketsSold;
     }
   
@@ -50,11 +65,47 @@ document.addEventListener("DOMContentLoaded", () => {
       return card;
     }
   
-    // Render the list of events to the feed
+    // Render events with search and filtering applied
     function renderEvents() {
+      const searchQuery = searchInput.value.toLowerCase();
+      const filterStatus = filterStatusSelect.value;
+      let filteredEvents = events;
+  
+      // Filter events based on search query (matches name or description)
+      if (searchQuery) {
+        filteredEvents = filteredEvents.filter(ev =>
+          ev.name.toLowerCase().includes(searchQuery) ||
+          ev.description.toLowerCase().includes(searchQuery)
+        );
+      }
+  
+      const todayNoTime = getTodayNoTime();
+  
+      // Filter events based on status
+      if (filterStatus === "upcoming") {
+        // Upcoming: only events after today (current events excluded)
+        filteredEvents = filteredEvents.filter(ev => {
+          const eventDate = new Date(ev.date + "T00:00:00");
+          return eventDate > todayNoTime;
+        });
+      } else if (filterStatus === "current") {
+        // Current: only events scheduled for today
+        filteredEvents = filteredEvents.filter(ev => {
+          const eventDate = new Date(ev.date + "T00:00:00");
+          return eventDate.getTime() === todayNoTime.getTime();
+        });
+      } else if (filterStatus === "past") {
+        // Past: only events before today
+        filteredEvents = filteredEvents.filter(ev => {
+          const eventDate = new Date(ev.date + "T00:00:00");
+          return eventDate < todayNoTime;
+        });
+      }
+      
+      // Clear and render filtered events
       eventsFeed.innerHTML = "";
-      events.forEach((event) => {
-        const card = createEventCard(event);
+      filteredEvents.forEach(ev => {
+        const card = createEventCard(ev);
         eventsFeed.appendChild(card);
       });
     }
@@ -89,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Handle ticket booking button click
       if (e.target.classList.contains("book-ticket")) {
-        const eventObj = events.find((ev) => ev.id == eventId);
+        const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openTicketModal(eventObj);
         }
@@ -97,14 +148,14 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Handle delete event button click
       if (e.target.classList.contains("delete-event")) {
-        events = events.filter((ev) => ev.id != eventId);
+        events = events.filter(ev => ev.id != eventId);
         renderEvents();
         updateDashboard();
       }
   
       // Handle edit event button click
       if (e.target.classList.contains("edit-event")) {
-        const eventObj = events.find((ev) => ev.id == eventId);
+        const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openEditModal(eventObj);
         }
@@ -133,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const buyerName = document.getElementById("buyer-name").value;
       const buyerEmail = document.getElementById("buyer-email").value;
-      // Simulate ticket booking confirmation (integration with backend can be added here)
+      // Simulate ticket booking confirmation (backend integration can be added here)
       alert(
         `Ticket booked successfully for ${buyerName}!\nConfirmation sent to ${buyerEmail}.`
       );
@@ -169,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const updatedTicketPrice = editTicketPriceInput.value;
   
       // Update the event in the events array
-      events = events.map((ev) => {
+      events = events.map(ev => {
         if (ev.id == id) {
           return {
             ...ev,
@@ -186,6 +237,10 @@ document.addEventListener("DOMContentLoaded", () => {
       editModal.style.display = "none";
       editEventForm.reset();
     });
+  
+    // Event listeners for search and filter controls
+    searchInput.addEventListener("input", renderEvents);
+    filterStatusSelect.addEventListener("change", renderEvents);
   
     // Initial dashboard update
     updateDashboard();
