@@ -5,17 +5,24 @@
     box-sizing: border-box;
   }
   
-  body {
+  body.light-mode{
     font-family: Poppins;
     /* background-color: #f4f7f9; */
-    background-image: linear-gradient(to right, #ffffff, #f8ebc3);
+    background-image: linear-gradient(to right, #ffffff, #ffd967);
     color: #333;
     line-height: 1.6;
   }
 
-  .dark-mode {
-    background-color: black;
-    color: white;
+  body.dark-mode{
+    font-family: Poppins;
+    /* background-color: #f4f7f9; */
+    background-image: linear-gradient(to bottom, #4d4b4b, #0e0d0a);
+    color: #ffffff;
+    line-height: 1.6;
+  }
+
+  body {
+    transition: background-color 0.3s, color 0.3s;
   }
   
   /* Header Styling */
@@ -35,7 +42,7 @@
     /* filter: blur(3px); */
   }
   
-  .EventSphere {
+  .EventSphere, .light-mode {
     font-size: 1rem;
     color: black;
     text-decoration: none;
