@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
     }
   
-    // Load persisted data on page load
     loadData();
   
     // -------------------------------
@@ -74,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUserUI();
   
     // -------------------------------
-    // Reference to key DOM elements
+    // Reference to DOM Elements
     // -------------------------------
     const createEventForm = document.getElementById("create-event-form");
     const eventsFeed = document.getElementById("events-feed");
@@ -106,6 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeRsvpModalBtn = document.getElementById("close-rsvp-modal");
     const rsvpForm = document.getElementById("rsvp-form");
     const rsvpModalInfo = document.getElementById("rsvp-modal-info");
+  
+    // Review Modal Elements
+    const reviewModal = document.getElementById("review-modal");
+    const closeReviewModalBtn = document.getElementById("close-review-modal");
+    const reviewForm = document.getElementById("review-form");
+    const reviewModalInfo = document.getElementById("review-modal-info");
   
     // Login Modal Elements
     const loginModal = document.getElementById("login-modal");
@@ -139,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
   
-    // Validate image file
     function validateImage(file, onValid, onError) {
       const allowedExtensions = ["jpg", "jpeg", "png"];
       const fileName = file.name;
@@ -182,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     // -------------------------------
-    // Dashboard Update & Calendar
+    // Dashboard & Calendar Updates
     // -------------------------------
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
@@ -214,14 +218,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
-    // Helper: generate shareable URL
     function getEventUrl(event) {
       return encodeURIComponent("https://example.com/event?id=" + event.id);
     }
     
     // -------------------------------
-    // Create Event Card
+    // Create Event Card with Reviews & Ratings
     // -------------------------------
+    function calculateAverageRating(reviews) {
+      if (!reviews || reviews.length === 0) return "No reviews yet";
+      const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+      const avg = total / reviews.length;
+      return avg.toFixed(1) + " (" + reviews.length + " reviews)";
+    }
+    
     function createEventCard(event) {
       const card = document.createElement("div");
       card.classList.add("event-card");
@@ -235,6 +245,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${eventUrl}`;
       const twitterShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${eventUrl}`;
       const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${eventUrl}`;
+      
+      // Calculate average rating from reviews (if any)
+      const averageRating = calculateAverageRating(event.reviews);
     
       card.innerHTML = `
         ${imageHTML}
@@ -244,10 +257,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>${event.description}</p>
           <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
           <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
+          <p><strong>Average Rating:</strong> ${averageRating}</p>
           <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
           <div class="action-buttons">
             <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
             <button class="rsvp-event" data-id="${event.id}">RSVP</button>
+            <button class="review-event" data-id="${event.id}">Review</button>
             <button class="edit-event" data-id="${event.id}">Edit Event</button>
             <button class="delete-event" data-id="${event.id}">Delete Event</button>
           </div>
@@ -309,50 +324,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // -------------------------------
-    // Notifications and Reminders Feature
-    // -------------------------------
-    // For demonstration: if an event is scheduled for tomorrow, show a reminder after 5 seconds.
-    function checkReminders() {
-      // Get tomorrow's date in "YYYY-MM-DD" format
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-      const yyyy = tomorrow.getFullYear();
-      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const dd = String(tomorrow.getDate()).padStart(2, '0');
-      const tomorrowStr = `${yyyy}-${mm}-${dd}`;
-    
-      events.forEach(ev => {
-        if (ev.date === tomorrowStr) {
-          // Request notification permission if needed
-          if (Notification.permission === "granted") {
-            setTimeout(() => {
-              new Notification("Reminder: " + ev.name, {
-                body: "Your event is scheduled for tomorrow!",
-                icon: ev.image || ""
-              });
-            }, 5000);
-          } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-              if (permission === "granted") {
-                setTimeout(() => {
-                  new Notification("Reminder: " + ev.name, {
-                    body: "Your event is scheduled for tomorrow!",
-                    icon: ev.image || ""
-                  });
-                }, 5000);
-              }
-            });
-          }
-        }
-      });
-    }
-    
-    // -------------------------------
     // Event Handlers
     // -------------------------------
     
-    // Create Event
+    // Create Event Handler
     createEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!currentUser) {
@@ -377,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
           category,
           image: imageData,
           rsvpCount: 0,
+          reviews: [],  // Initialize reviews array
           createdBy: currentUser ? currentUser.email : null
         };
         events.unshift(eventObj);
@@ -402,21 +378,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Event delegation for action buttons
+    // Delegate action button clicks
     eventsFeed.addEventListener("click", (e) => {
       const eventId = e.target.getAttribute("data-id");
+    
       if (e.target.classList.contains("book-ticket")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openTicketModal(eventObj);
         }
       }
+    
       if (e.target.classList.contains("rsvp-event")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openRsvpModal(eventObj);
         }
       }
+    
+      if (e.target.classList.contains("review-event")) {
+        const eventObj = events.find(ev => ev.id == eventId);
+        if (eventObj) {
+          openReviewModal(eventObj);
+        }
+      }
+    
       if (e.target.classList.contains("delete-event")) {
         events = events.filter(ev => ev.id != eventId);
         renderEvents();
@@ -424,6 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCalendarEvents();
         saveData();
       }
+    
       if (e.target.classList.contains("edit-event")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
@@ -494,6 +481,43 @@ document.addEventListener("DOMContentLoaded", () => {
       renderEvents();
       rsvpModal.style.display = "none";
       rsvpForm.reset();
+      saveData();
+    });
+    
+    // Review Modal Handlers
+    function openReviewModal(eventObj) {
+      // Pre-fill review modal with event details for context
+      reviewModalInfo.innerHTML = `
+        <p><strong>Event:</strong> ${eventObj.name}</p>
+        <p><strong>Date:</strong> ${eventObj.date}</p>
+      `;
+      reviewModal.dataset.eventId = eventObj.id;
+      reviewModal.style.display = "block";
+    }
+    
+    document.getElementById("close-review-modal").addEventListener("click", () => {
+      reviewModal.style.display = "none";
+      reviewForm.reset();
+    });
+    
+    reviewForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rating = parseInt(document.getElementById("review-rating").value);
+      const reviewText = document.getElementById("review-text").value;
+      const eventId = reviewModal.dataset.eventId;
+      events = events.map(ev => {
+        if (ev.id == eventId) {
+          const newReview = { rating, reviewText };
+          const reviews = ev.reviews ? ev.reviews : [];
+          reviews.push(newReview);
+          return { ...ev, reviews };
+        }
+        return ev;
+      });
+      alert("Review submitted!");
+      renderEvents();
+      reviewModal.style.display = "none";
+      reviewForm.reset();
       saveData();
     });
     
@@ -612,11 +636,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     // -------------------------------
-    // Reminders & Notifications
+    // Notifications & Reminders
     // -------------------------------
     function checkReminders() {
-      // For demonstration, we assume that if an event is scheduled for tomorrow,
-      // we show a reminder notification after 5 seconds.
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
