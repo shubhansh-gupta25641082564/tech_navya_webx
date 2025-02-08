@@ -33,6 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let events = [];
     let ticketsSold = 0;
   
+    // Initialize FullCalendar
+    const calendarEl = document.getElementById("calendar-container");
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth'
+    });
+    calendar.render();
+  
     // Utility: Create a date object for today with no time (midnight)
     function getTodayNoTime() {
       const now = new Date();
@@ -49,6 +56,22 @@ document.addEventListener("DOMContentLoaded", () => {
         return eventDate > todayNoTime;
       }).length;
       ticketsSoldEl.textContent = ticketsSold;
+    }
+  
+    // Update the calendar with all events
+    function updateCalendarEvents() {
+      calendar.removeAllEvents();
+      events.forEach(ev => {
+        calendar.addEvent({
+          id: ev.id.toString(),
+          title: ev.name,
+          start: ev.date, // Assumes format "YYYY-MM-DD"
+          extendedProps: {
+            description: ev.description,
+            category: ev.category
+          }
+        });
+      });
     }
   
     // Create an event card element from an event object
@@ -139,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       events.unshift(eventObj);
       renderEvents();
       updateDashboard();
+      updateCalendarEvents();
       createEventForm.reset();
     });
   
@@ -159,6 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         events = events.filter(ev => ev.id != eventId);
         renderEvents();
         updateDashboard();
+        updateCalendarEvents();
       }
   
       // Handle edit event button click
@@ -246,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       renderEvents();
       updateDashboard();
+      updateCalendarEvents();
       editModal.style.display = "none";
       editEventForm.reset();
     });

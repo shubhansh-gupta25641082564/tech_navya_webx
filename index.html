@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EventSphere</title>
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -21,6 +23,7 @@
         <li><a href="#discover">Discover</a></li>
         <li><a href="#create-event">Create Event</a></li>
         <li><a href="#tickets">Tickets</a></li>
+        <li><a href="#calendar">Calendar</a></li>
       </ul>
     </nav>
 
@@ -104,6 +107,12 @@
           <!-- Event cards will be added dynamically here -->
         </div>
       </section>
+
+      <!-- Calendar Section -->
+      <section id="calendar">
+        <h2>Calendar</h2>
+        <div id="calendar-container"></div>
+      </section>
     </main>
   </div>
 
@@ -168,6 +177,8 @@
     </div>
   </div>
 
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
