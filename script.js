@@ -1,5 +1,38 @@
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+    // Global variables for events and tickets sold
+    let events = [];
+    let ticketsSold = 0;
+  
+    // Load data from localStorage
+    function loadData() {
+      const eventsData = localStorage.getItem("eventsData");
+      if (eventsData) {
+        try {
+          events = JSON.parse(eventsData);
+        } catch (e) {
+          events = [];
+        }
+      } else {
+        events = [];
+      }
+      const tickets = localStorage.getItem("ticketsSold");
+      if (tickets) {
+        ticketsSold = parseInt(tickets);
+      } else {
+        ticketsSold = 0;
+      }
+    }
+  
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem("eventsData", JSON.stringify(events));
+      localStorage.setItem("ticketsSold", ticketsSold.toString());
+    }
+  
+    // Load persisted data on page load
+    loadData();
+  
     // Reference to key DOM elements
     const createEventForm = document.getElementById("create-event-form");
     const eventsFeed = document.getElementById("events-feed");
@@ -36,10 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("search-input");
     const filterStatusSelect = document.getElementById("filter-status");
     const filterCategorySelect = document.getElementById("filter-category");
-  
-    // Data store for events and tickets
-    let events = [];
-    let ticketsSold = 0;
   
     // Initialize FullCalendar (if using calendar integration)
     const calendarEl = document.getElementById("calendar-container");
@@ -136,48 +165,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     // Create an event card element from an event object
-function createEventCard(event) {
-    const card = document.createElement("div");
-    card.classList.add("event-card");
-    let imageHTML = "";
-    if (event.image) {
-      imageHTML = `<img src="${event.image}" class="event-image" alt="Event Image">`;
+    function createEventCard(event) {
+      const card = document.createElement("div");
+      card.classList.add("event-card");
+      let imageHTML = "";
+      if (event.image) {
+        imageHTML = `<img src="${event.image}" class="event-image" alt="Event Image">`;
+      }
+      
+      const eventUrl = getEventUrl(event);
+      const shareText = encodeURIComponent("Check out this event: " + event.name);
+      const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${eventUrl}`;
+      const twitterShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${eventUrl}`;
+      const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${eventUrl}`;
+    
+      card.innerHTML = `
+        ${imageHTML}
+        <div class="card-content">
+          <h3>${event.name}</h3>
+          <p class="event-date">${event.date}</p>
+          <p>${event.description}</p>
+          <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
+          <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
+          <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
+          <!-- Action buttons in one row -->
+          <div class="action-buttons">
+            <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
+            <button class="rsvp-event" data-id="${event.id}">RSVP</button>
+            <button class="edit-event" data-id="${event.id}">Edit Event</button>
+            <button class="delete-event" data-id="${event.id}">Delete Event</button>
+          </div>
+          <div class="share-buttons">
+            <span>Share: </span>
+            <a href="${facebookShareUrl}" target="_blank" class="share-btn facebook">Facebook</a>
+            <a href="${twitterShareUrl}" target="_blank" class="share-btn twitter">Twitter</a>
+            <a href="${linkedInShareUrl}" target="_blank" class="share-btn linkedin">LinkedIn</a>
+          </div>
+        </div>
+      `;
+      return card;
     }
     
-    // Generate social share URLs using the event URL and title
-    const eventUrl = getEventUrl(event);
-    const shareText = encodeURIComponent("Check out this event: " + event.name);
-    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${eventUrl}`;
-    const twitterShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${eventUrl}`;
-    const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${eventUrl}`;
-  
-    card.innerHTML = `
-      ${imageHTML}
-      <div class="card-content">
-        <h3>${event.name}</h3>
-        <p class="event-date">${event.date}</p>
-        <p>${event.description}</p>
-        <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
-        <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
-        <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
-        <!-- Action buttons wrapped in one row -->
-        <div class="action-buttons">
-          <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
-          <button class="rsvp-event" data-id="${event.id}">RSVP</button>
-          <button class="edit-event" data-id="${event.id}">Edit Event</button>
-          <button class="delete-event" data-id="${event.id}">Delete Event</button>
-        </div>
-        <div class="share-buttons">
-          <span>Share: </span>
-          <a href="${facebookShareUrl}" target="_blank" class="share-btn facebook">Facebook</a>
-          <a href="${twitterShareUrl}" target="_blank" class="share-btn twitter">Twitter</a>
-          <a href="${linkedInShareUrl}" target="_blank" class="share-btn linkedin">LinkedIn</a>
-        </div>
-      </div>
-    `;
-    return card;
-  }  
-  
     // Render events with search, status, and category filtering applied
     function renderEvents() {
       const searchQuery = searchInput.value.toLowerCase();
@@ -242,7 +270,7 @@ function createEventCard(event) {
           ticketPrice,
           category,
           image: imageData,
-          rsvpCount: 0  // Initialize RSVP count to 0
+          rsvpCount: 0
         };
     
         events.unshift(eventObj);
@@ -250,6 +278,7 @@ function createEventCard(event) {
         updateDashboard();
         updateCalendarEvents();
         createEventForm.reset();
+        saveData();
       }
     
       if (file) {
@@ -289,6 +318,7 @@ function createEventCard(event) {
         renderEvents();
         updateDashboard();
         updateCalendarEvents();
+        saveData();
       }
     
       if (e.target.classList.contains("edit-event")) {
@@ -325,17 +355,16 @@ function createEventCard(event) {
       updateDashboard();
       ticketModal.style.display = "none";
       ticketForm.reset();
+      saveData();
     });
     
     // Open the RSVP modal and pre-fill with event details
     function openRsvpModal(eventObj) {
-      // Update modal content with event details for context
       rsvpModalInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
         <p><strong>Date:</strong> ${eventObj.date}</p>
         <p><strong>Category:</strong> ${eventObj.category.charAt(0).toUpperCase() + eventObj.category.slice(1)}</p>
       `;
-      // Store the event id on the modal for later reference
       rsvpModal.dataset.eventId = eventObj.id;
       rsvpModal.style.display = "block";
     }
@@ -350,7 +379,6 @@ function createEventCard(event) {
       const rsvpName = document.getElementById("rsvp-name").value;
       const rsvpEmail = document.getElementById("rsvp-email").value;
       const eventId = rsvpModal.dataset.eventId;
-      // For this demo, we simply increment the RSVP count for the event.
       events = events.map(ev => {
         if (ev.id == eventId) {
           const currentCount = ev.rsvpCount ? ev.rsvpCount : 0;
@@ -363,6 +391,7 @@ function createEventCard(event) {
       renderEvents();
       rsvpModal.style.display = "none";
       rsvpForm.reset();
+      saveData();
     });
     
     // Open the edit modal and pre-fill with event details
@@ -413,6 +442,7 @@ function createEventCard(event) {
         updateCalendarEvents();
         editModal.style.display = "none";
         editEventForm.reset();
+        saveData();
       }
     
       if (file) {
@@ -434,5 +464,7 @@ function createEventCard(event) {
     filterCategorySelect.addEventListener("change", renderEvents);
     
     updateDashboard();
+    renderEvents();
+    updateCalendarEvents();
   });
   
