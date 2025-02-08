@@ -45,6 +45,10 @@
             <h3>Upcoming Events</h3>
             <p id="upcoming-events">0</p>
           </div>
+          <div class="card">
+            <h3>Total RSVPs</h3>
+            <p id="total-rsvps">0</p>
+          </div>
         </div>
       </section>
 
@@ -183,6 +187,28 @@
           <input type="file" id="edit-event-image" accept="image/*" />
         </div>
         <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RSVP Modal -->
+  <div id="rsvp-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-rsvp-modal" class="close">&times;</span>
+      <h2>RSVP to Event</h2>
+      <div id="rsvp-modal-info">
+        <!-- Event details for RSVP will appear here -->
+      </div>
+      <form id="rsvp-form">
+        <div class="form-group">
+          <label for="rsvp-name">Your Name:</label>
+          <input type="text" id="rsvp-name" required />
+        </div>
+        <div class="form-group">
+          <label for="rsvp-email">Email:</label>
+          <input type="email" id="rsvp-email" required />
+        </div>
+        <button type="submit">Submit RSVP</button>
       </form>
     </div>
   </div>

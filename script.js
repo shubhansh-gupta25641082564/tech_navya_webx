@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalEventsEl = document.getElementById("total-events");
     const ticketsSoldEl = document.getElementById("tickets-sold");
     const upcomingEventsEl = document.getElementById("upcoming-events");
+    const totalRsvpsEl = document.getElementById("total-rsvps");
   
     // Ticket Booking Modal Elements
     const ticketModal = document.getElementById("ticket-modal");
@@ -24,6 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const editTicketPriceInput = document.getElementById("edit-ticket-price");
     const editEventCategorySelect = document.getElementById("edit-event-category");
     const editEventImageInput = document.getElementById("edit-event-image");
+  
+    // RSVP Modal Elements
+    const rsvpModal = document.getElementById("rsvp-modal");
+    const closeRsvpModalBtn = document.getElementById("close-rsvp-modal");
+    const rsvpForm = document.getElementById("rsvp-form");
+    const rsvpModalInfo = document.getElementById("rsvp-modal-info");
   
     // Search and Filter Controls
     const searchInput = document.getElementById("search-input");
@@ -68,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         img.onload = function() {
           const width = img.width;
           const height = img.height;
-          // Check dimensions (minimum 300x300, maximum 2000x2000)
+          // Check dimensions (minimum 150x150, maximum 300x300 as per your settings)
           if (width < 150 || height < 150) {
             onError("Image dimensions are too small. Minimum size is 150x150 pixels.");
             return;
@@ -94,12 +101,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
       const todayNoTime = getTodayNoTime();
-      // Upcoming events: only events scheduled after today (excluding current)
       upcomingEventsEl.textContent = events.filter(ev => {
         const eventDate = new Date(ev.date + "T00:00:00");
         return eventDate > todayNoTime;
       }).length;
       ticketsSoldEl.textContent = ticketsSold;
+      // Calculate total RSVPs across all events
+      let totalRsvp = 0;
+      events.forEach(ev => {
+        totalRsvp += ev.rsvpCount ? ev.rsvpCount : 0;
+      });
+      totalRsvpsEl.textContent = totalRsvp;
     }
   
     // Update the calendar with all events
@@ -109,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         calendar.addEvent({
           id: ev.id.toString(),
           title: ev.name,
-          start: ev.date, // Expected format "YYYY-MM-DD"
+          start: ev.date,
           extendedProps: {
             description: ev.description,
             category: ev.category
@@ -117,12 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     }
-
+  
     // Helper function to generate a shareable URL for an event
-function getEventUrl(event) {
-    // For demonstration, we use a dummy base URL. Replace with your actual event URL.
-    return encodeURIComponent("https://example.com/event?id=" + event.id);
-  }
+    function getEventUrl(event) {
+      return encodeURIComponent("https://example.com/event?id=" + event.id);
+    }
   
     // Create an event card element from an event object
 function createEventCard(event) {
@@ -148,9 +159,14 @@ function createEventCard(event) {
         <p>${event.description}</p>
         <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
         <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
-        <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
-        <button class="edit-event" data-id="${event.id}">Edit Event</button>
-        <button class="delete-event" data-id="${event.id}">Delete Event</button>
+        <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
+        <!-- Action buttons wrapped in one row -->
+        <div class="action-buttons">
+          <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
+          <button class="rsvp-event" data-id="${event.id}">RSVP</button>
+          <button class="edit-event" data-id="${event.id}">Edit Event</button>
+          <button class="delete-event" data-id="${event.id}">Delete Event</button>
+        </div>
         <div class="share-buttons">
           <span>Share: </span>
           <a href="${facebookShareUrl}" target="_blank" class="share-btn facebook">Facebook</a>
@@ -160,7 +176,7 @@ function createEventCard(event) {
       </div>
     `;
     return card;
-  }
+  }  
   
     // Render events with search, status, and category filtering applied
     function renderEvents() {
@@ -168,18 +184,16 @@ function createEventCard(event) {
       const filterStatus = filterStatusSelect.value;
       const filterCategory = filterCategorySelect.value;
       let filteredEvents = events;
-  
-      // Filter based on search query (name or description)
+    
       if (searchQuery) {
         filteredEvents = filteredEvents.filter(ev =>
           ev.name.toLowerCase().includes(searchQuery) ||
           ev.description.toLowerCase().includes(searchQuery)
         );
       }
-  
+    
       const todayNoTime = getTodayNoTime();
-  
-      // Filter based on event status
+    
       if (filterStatus === "upcoming") {
         filteredEvents = filteredEvents.filter(ev => {
           const eventDate = new Date(ev.date + "T00:00:00");
@@ -196,20 +210,18 @@ function createEventCard(event) {
           return eventDate < todayNoTime;
         });
       }
-  
-      // Filter based on event category if not "all"
+    
       if (filterCategory !== "all") {
         filteredEvents = filteredEvents.filter(ev => ev.category === filterCategory);
       }
       
-      // Clear and render filtered events
       eventsFeed.innerHTML = "";
       filteredEvents.forEach(ev => {
         const card = createEventCard(ev);
         eventsFeed.appendChild(card);
       });
     }
-  
+    
     // Handle new event creation with image upload support and validations
     createEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -220,8 +232,7 @@ function createEventCard(event) {
       const category = document.getElementById("event-category").value;
       const imageInput = document.getElementById("event-image");
       const file = imageInput.files[0];
-  
-      // Function to add event (with optional imageData)
+    
       function addEvent(imageData = null) {
         const eventObj = {
           id: Date.now(),
@@ -230,16 +241,17 @@ function createEventCard(event) {
           description,
           ticketPrice,
           category,
-          image: imageData
+          image: imageData,
+          rsvpCount: 0  // Initialize RSVP count to 0
         };
-  
+    
         events.unshift(eventObj);
         renderEvents();
         updateDashboard();
         updateCalendarEvents();
         createEventForm.reset();
       }
-  
+    
       if (file) {
         validateImage(file,
           function(dataUrl) {
@@ -253,28 +265,32 @@ function createEventCard(event) {
         addEvent();
       }
     });
-  
-    // Delegate click events for booking, editing, and deleting events
+    
+    // Delegate click events for booking, editing, deleting, and RSVPing events
     eventsFeed.addEventListener("click", (e) => {
       const eventId = e.target.getAttribute("data-id");
-  
-      // Handle ticket booking button click
+    
       if (e.target.classList.contains("book-ticket")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openTicketModal(eventObj);
         }
       }
-  
-      // Handle delete event button click
+    
+      if (e.target.classList.contains("rsvp-event")) {
+        const eventObj = events.find(ev => ev.id == eventId);
+        if (eventObj) {
+          openRsvpModal(eventObj);
+        }
+      }
+    
       if (e.target.classList.contains("delete-event")) {
         events = events.filter(ev => ev.id != eventId);
         renderEvents();
         updateDashboard();
         updateCalendarEvents();
       }
-  
-      // Handle edit event button click
+    
       if (e.target.classList.contains("edit-event")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
@@ -282,7 +298,7 @@ function createEventCard(event) {
         }
       }
     });
-  
+    
     // Open the ticket booking modal and display event details
     function openTicketModal(eventObj) {
       modalEventInfo.innerHTML = `
@@ -294,28 +310,62 @@ function createEventCard(event) {
       ticketModal.style.display = "block";
       ticketModal.dataset.eventId = eventObj.id;
     }
-  
-    // Close the ticket modal when the close button is clicked
+    
     closeTicketModalBtn.addEventListener("click", () => {
       ticketModal.style.display = "none";
       ticketForm.reset();
     });
-  
-    // Handle ticket booking submission
+    
     ticketForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const buyerName = document.getElementById("buyer-name").value;
       const buyerEmail = document.getElementById("buyer-email").value;
-      alert(
-        `Ticket booked successfully for ${buyerName}!\nConfirmation sent to ${buyerEmail}.`
-      );
+      alert(`Ticket booked successfully for ${buyerName}!\nConfirmation sent to ${buyerEmail}.`);
       ticketsSold++;
       updateDashboard();
       ticketModal.style.display = "none";
       ticketForm.reset();
     });
-  
-    // Open the edit modal and pre-fill the form with event details
+    
+    // Open the RSVP modal and pre-fill with event details
+    function openRsvpModal(eventObj) {
+      // Update modal content with event details for context
+      rsvpModalInfo.innerHTML = `
+        <p><strong>Event:</strong> ${eventObj.name}</p>
+        <p><strong>Date:</strong> ${eventObj.date}</p>
+        <p><strong>Category:</strong> ${eventObj.category.charAt(0).toUpperCase() + eventObj.category.slice(1)}</p>
+      `;
+      // Store the event id on the modal for later reference
+      rsvpModal.dataset.eventId = eventObj.id;
+      rsvpModal.style.display = "block";
+    }
+    
+    closeRsvpModalBtn.addEventListener("click", () => {
+      rsvpModal.style.display = "none";
+      rsvpForm.reset();
+    });
+    
+    rsvpForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rsvpName = document.getElementById("rsvp-name").value;
+      const rsvpEmail = document.getElementById("rsvp-email").value;
+      const eventId = rsvpModal.dataset.eventId;
+      // For this demo, we simply increment the RSVP count for the event.
+      events = events.map(ev => {
+        if (ev.id == eventId) {
+          const currentCount = ev.rsvpCount ? ev.rsvpCount : 0;
+          return { ...ev, rsvpCount: currentCount + 1 };
+        }
+        return ev;
+      });
+      alert(`RSVP submitted for ${rsvpName}!`);
+      updateDashboard();
+      renderEvents();
+      rsvpModal.style.display = "none";
+      rsvpForm.reset();
+    });
+    
+    // Open the edit modal and pre-fill with event details
     function openEditModal(eventObj) {
       editEventIdInput.value = eventObj.id;
       editEventNameInput.value = eventObj.name;
@@ -323,18 +373,15 @@ function createEventCard(event) {
       editEventDescriptionInput.value = eventObj.description;
       editTicketPriceInput.value = eventObj.ticketPrice;
       editEventCategorySelect.value = eventObj.category;
-      // Clear the file input so user may choose a new image if desired
       editEventImageInput.value = "";
       editModal.style.display = "block";
     }
-  
-    // Close the edit modal when the close button is clicked
+    
     closeEditModalBtn.addEventListener("click", () => {
       editModal.style.display = "none";
       editEventForm.reset();
     });
-  
-    // Handle edit event form submission with image update support and validations
+    
     editEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const id = editEventIdInput.value;
@@ -345,8 +392,7 @@ function createEventCard(event) {
       const updatedCategory = editEventCategorySelect.value;
       const imageInput = editEventImageInput;
       const file = imageInput.files[0];
-  
-      // Function to update the event (with new imageData if provided)
+    
       function updateEvent(imageData) {
         events = events.map(ev => {
           if (ev.id == id) {
@@ -357,7 +403,6 @@ function createEventCard(event) {
               description: updatedDescription,
               ticketPrice: updatedTicketPrice,
               category: updatedCategory,
-              // Use new image if provided; otherwise keep the existing image
               image: imageData !== undefined ? imageData : ev.image
             };
           }
@@ -369,7 +414,7 @@ function createEventCard(event) {
         editModal.style.display = "none";
         editEventForm.reset();
       }
-  
+    
       if (file) {
         validateImage(file,
           function(dataUrl) {
@@ -380,16 +425,14 @@ function createEventCard(event) {
           }
         );
       } else {
-        updateEvent(); // No new image selected; keep existing image.
+        updateEvent();
       }
     });
-  
-    // Event listeners for search and filter controls
+    
     searchInput.addEventListener("input", renderEvents);
     filterStatusSelect.addEventListener("change", renderEvents);
     filterCategorySelect.addEventListener("change", renderEvents);
-  
-    // Initial dashboard update
+    
     updateDashboard();
   });
   
