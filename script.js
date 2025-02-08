@@ -1,10 +1,13 @@
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
-    // Global variables for events and tickets sold
+    // -------------------------------
+    // Persistence & Authentication Setup
+    // -------------------------------
     let events = [];
     let ticketsSold = 0;
+    let currentUser = null;
   
-    // Load data from localStorage
+    // Load events, ticketsSold, and currentUser from localStorage
     function loadData() {
       const eventsData = localStorage.getItem("eventsData");
       if (eventsData) {
@@ -13,27 +16,69 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
           events = [];
         }
-      } else {
-        events = [];
       }
       const tickets = localStorage.getItem("ticketsSold");
-      if (tickets) {
-        ticketsSold = parseInt(tickets);
-      } else {
-        ticketsSold = 0;
-      }
+      ticketsSold = tickets ? parseInt(tickets) : 0;
+      const userData = localStorage.getItem("currentUser");
+      currentUser = userData ? JSON.parse(userData) : null;
     }
   
-    // Save data to localStorage
+    // Save events, ticketsSold, and currentUser to localStorage
     function saveData() {
       localStorage.setItem("eventsData", JSON.stringify(events));
       localStorage.setItem("ticketsSold", ticketsSold.toString());
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
     }
   
-    // Load persisted data on page load
-    loadData();
+    // -------------------------------
+    // User Authentication Functions
+    // -------------------------------
+    // Users are stored in localStorage under "users" as an array
+    function loadUsers() {
+      const usersData = localStorage.getItem("users");
+      return usersData ? JSON.parse(usersData) : [];
+    }
+    function saveUsers(users) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
   
+    // Update header UI based on authentication state
+    function updateUserUI() {
+      const userAuthDiv = document.getElementById("user-auth");
+      userAuthDiv.innerHTML = "";
+      if (currentUser) {
+        userAuthDiv.innerHTML = `
+          <span>Hello, ${currentUser.name}</span>
+          <button id="logout-btn">Logout</button>
+        `;
+        document.getElementById("logout-btn").addEventListener("click", () => {
+          currentUser = null;
+          saveData();
+          updateUserUI();
+        });
+      } else {
+        userAuthDiv.innerHTML = `
+          <button id="login-btn">Login</button>
+          <button id="register-btn">Register</button>
+        `;
+        document.getElementById("login-btn").addEventListener("click", () => {
+          document.getElementById("login-modal").style.display = "block";
+        });
+        document.getElementById("register-btn").addEventListener("click", () => {
+          document.getElementById("register-modal").style.display = "block";
+        });
+      }
+    }
+  
+    // -------------------------------
+    // Load persisted data
+    // -------------------------------
+    loadData();
+    updateUserUI();
+  
+    // -------------------------------
     // Reference to key DOM elements
+    // -------------------------------
     const createEventForm = document.getElementById("create-event-form");
     const eventsFeed = document.getElementById("events-feed");
     const totalEventsEl = document.getElementById("total-events");
@@ -64,6 +109,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeRsvpModalBtn = document.getElementById("close-rsvp-modal");
     const rsvpForm = document.getElementById("rsvp-form");
     const rsvpModalInfo = document.getElementById("rsvp-modal-info");
+  
+    // Login Modal Elements
+    const loginModal = document.getElementById("login-modal");
+    const closeLoginModalBtn = document.getElementById("close-login-modal");
+    const loginForm = document.getElementById("login-form");
+  
+    // Register Modal Elements
+    const registerModal = document.getElementById("register-modal");
+    const closeRegisterModalBtn = document.getElementById("close-register-modal");
+    const registerForm = document.getElementById("register-form");
   
     // Search and Filter Controls
     const searchInput = document.getElementById("search-input");
@@ -104,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
         img.onload = function() {
           const width = img.width;
           const height = img.height;
-          // Check dimensions (minimum 150x150, maximum 300x300 as per your settings)
           if (width < 150 || height < 150) {
             onError("Image dimensions are too small. Minimum size is 150x150 pixels.");
             return;
@@ -135,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return eventDate > todayNoTime;
       }).length;
       ticketsSoldEl.textContent = ticketsSold;
-      // Calculate total RSVPs across all events
       let totalRsvp = 0;
       events.forEach(ev => {
         totalRsvp += ev.rsvpCount ? ev.rsvpCount : 0;
@@ -188,7 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
           <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
           <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
-          <!-- Action buttons in one row -->
           <div class="action-buttons">
             <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
             <button class="rsvp-event" data-id="${event.id}">RSVP</button>
@@ -253,6 +305,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle new event creation with image upload support and validations
     createEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      // Optionally, you can require the user to be logged in before creating an event.
+      if (!currentUser) {
+        alert("Please log in to create an event.");
+        return;
+      }
       const name = document.getElementById("event-name").value;
       const date = document.getElementById("event-date").value;
       const description = document.getElementById("event-description").value;
@@ -270,7 +327,8 @@ document.addEventListener("DOMContentLoaded", () => {
           ticketPrice,
           category,
           image: imageData,
-          rsvpCount: 0
+          rsvpCount: 0,
+          createdBy: currentUser ? currentUser.email : null
         };
     
         events.unshift(eventObj);
@@ -459,6 +517,55 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
+    // Authentication: Login
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim().toLowerCase();
+      const password = document.getElementById("login-password").value;
+      const users = loadUsers();
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        currentUser = user;
+        saveData();
+        updateUserUI();
+        loginModal.style.display = "none";
+        loginForm.reset();
+        alert("Logged in successfully!");
+      } else {
+        alert("Invalid email or password.");
+      }
+    });
+    
+    closeLoginModalBtn.addEventListener("click", () => {
+      loginModal.style.display = "none";
+      loginForm.reset();
+    });
+    
+    // Authentication: Register
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("register-name").value.trim();
+      const email = document.getElementById("register-email").value.trim().toLowerCase();
+      const password = document.getElementById("register-password").value;
+      let users = loadUsers();
+      if (users.find(u => u.email === email)) {
+        alert("User with this email already exists.");
+        return;
+      }
+      const newUser = { name, email, password };
+      users.push(newUser);
+      saveUsers(users);
+      alert("Registration successful! Please log in.");
+      registerModal.style.display = "none";
+      registerForm.reset();
+    });
+    
+    closeRegisterModalBtn.addEventListener("click", () => {
+      registerModal.style.display = "none";
+      registerForm.reset();
+    });
+    
+    // Search and filter event listeners
     searchInput.addEventListener("input", renderEvents);
     filterStatusSelect.addEventListener("change", renderEvents);
     filterCategorySelect.addEventListener("change", renderEvents);

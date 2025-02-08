@@ -9,9 +9,14 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header with User Authentication Section -->
   <header>
     <h1>EventSphere</h1>
+    <div id="user-auth">
+      <!-- These buttons will be replaced by user info if logged in -->
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+    </div>
   </header>
 
   <!-- Main Container -->
@@ -209,6 +214,48 @@
           <input type="email" id="rsvp-email" required />
         </div>
         <button type="submit">Submit RSVP</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-login-modal" class="close">&times;</span>
+      <h2>Login</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email:</label>
+          <input type="email" id="login-email" required />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password:</label>
+          <input type="password" id="login-password" required />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-register-modal" class="close">&times;</span>
+      <h2>Register</h2>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="register-name">Name:</label>
+          <input type="text" id="register-name" required />
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email:</label>
+          <input type="email" id="register-email" required />
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password:</label>
+          <input type="password" id="register-password" required />
+        </div>
+        <button type="submit">Register</button>
       </form>
     </div>
   </div>

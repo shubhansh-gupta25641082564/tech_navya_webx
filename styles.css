@@ -18,6 +18,29 @@
     color: #fff;
     padding: 20px;
     text-align: center;
+    position: relative;
+  }
+  
+  /* User Auth Section in Header */
+  #user-auth {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  
+  #user-auth button {
+    margin-left: 10px;
+    background-color: #fff;
+    color: #4A90E2;
+    border: 1px solid #4A90E2;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  #user-auth button:hover {
+    background-color: #4A90E2;
+    color: #fff;
   }
   
   /* Container Layout */
@@ -207,7 +230,7 @@
     margin-top: 5px;
   }
   
-  /* New Action Buttons Row */
+  /* Action Buttons Row */
   .action-buttons {
     display: flex;
     gap: 5px;
@@ -216,7 +239,6 @@
   
   .action-buttons button {
     flex: 1;
-    /* Optionally, add font-size adjustments or padding if needed */
   }
   
   /* Social Share Buttons Styling */
@@ -271,7 +293,7 @@
     margin: 0 auto;
   }
   
-  /* Modal Styling (for all modals including RSVP) */
+  /* Modal Styling */
   .modal {
     display: none;
     position: fixed;
