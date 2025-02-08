@@ -112,6 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const reviewForm = document.getElementById("review-form");
     const reviewModalInfo = document.getElementById("review-modal-info");
   
+    // Chat/Discussion Modal Elements
+    const chatModal = document.getElementById("chat-modal");
+    const closeChatModalBtn = document.getElementById("close-chat-modal");
+    const chatForm = document.getElementById("chat-form");
+    const chatMessagesDiv = document.getElementById("chat-messages");
+  
     // Login Modal Elements
     const loginModal = document.getElementById("login-modal");
     const closeLoginModalBtn = document.getElementById("close-login-modal");
@@ -223,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // -------------------------------
-    // Create Event Card with Reviews & Ratings
+    // Reviews & Ratings Helper
     // -------------------------------
     function calculateAverageRating(reviews) {
       if (!reviews || reviews.length === 0) return "No reviews yet";
@@ -232,6 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return avg.toFixed(1) + " (" + reviews.length + " reviews)";
     }
     
+    // -------------------------------
+    // Create Event Card with Chat/Discussion, Reviews & Ratings
+    // -------------------------------
     function createEventCard(event) {
       const card = document.createElement("div");
       card.classList.add("event-card");
@@ -246,7 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const twitterShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${eventUrl}`;
       const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${eventUrl}`;
       
-      // Calculate average rating from reviews (if any)
       const averageRating = calculateAverageRating(event.reviews);
     
       card.innerHTML = `
@@ -263,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
             <button class="rsvp-event" data-id="${event.id}">RSVP</button>
             <button class="review-event" data-id="${event.id}">Review</button>
+            <button class="chat-event" data-id="${event.id}">Chat</button>
             <button class="edit-event" data-id="${event.id}">Edit Event</button>
             <button class="delete-event" data-id="${event.id}">Delete Event</button>
           </div>
@@ -352,7 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
           category,
           image: imageData,
           rsvpCount: 0,
-          reviews: [],  // Initialize reviews array
+          reviews: [],
+          discussions: [],  // Initialize discussions array for chat
           createdBy: currentUser ? currentUser.email : null
         };
         events.unshift(eventObj);
@@ -378,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Delegate action button clicks
+    // Delegate action button clicks on event cards
     eventsFeed.addEventListener("click", (e) => {
       const eventId = e.target.getAttribute("data-id");
     
@@ -403,6 +413,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     
+      if (e.target.classList.contains("chat-event")) {
+        const eventObj = events.find(ev => ev.id == eventId);
+        if (eventObj) {
+          openChatModal(eventObj);
+        }
+      }
+    
       if (e.target.classList.contains("delete-event")) {
         events = events.filter(ev => ev.id != eventId);
         renderEvents();
@@ -419,7 +436,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
+    // -------------------------------
     // Ticket Booking Modal Handlers
+    // -------------------------------
     function openTicketModal(eventObj) {
       modalEventInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
@@ -448,7 +467,9 @@ document.addEventListener("DOMContentLoaded", () => {
       saveData();
     });
     
+    // -------------------------------
     // RSVP Modal Handlers
+    // -------------------------------
     function openRsvpModal(eventObj) {
       rsvpModalInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
@@ -484,9 +505,10 @@ document.addEventListener("DOMContentLoaded", () => {
       saveData();
     });
     
+    // -------------------------------
     // Review Modal Handlers
+    // -------------------------------
     function openReviewModal(eventObj) {
-      // Pre-fill review modal with event details for context
       reviewModalInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
         <p><strong>Date:</strong> ${eventObj.date}</p>
@@ -521,7 +543,64 @@ document.addEventListener("DOMContentLoaded", () => {
       saveData();
     });
     
+    // -------------------------------
+    // Chat/Discussion Modal Handlers
+    // -------------------------------
+    function openChatModal(eventObj) {
+      // Render existing discussion messages
+      renderChatMessages(eventObj);
+      chatModal.dataset.eventId = eventObj.id;
+      chatModal.style.display = "block";
+    }
+    
+    function renderChatMessages(eventObj) {
+      // eventObj.discussions is an array of message objects: { sender, message, timestamp }
+      if (!eventObj.discussions) eventObj.discussions = [];
+      chatMessagesDiv.innerHTML = "";
+      eventObj.discussions.forEach(msg => {
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add("chat-message");
+        msgDiv.innerHTML = `<strong>${msg.sender}:</strong> ${msg.message} <span class="timestamp">${new Date(msg.timestamp).toLocaleString()}</span>`;
+        chatMessagesDiv.appendChild(msgDiv);
+      });
+    }
+    
+    closeChatModalBtn.addEventListener("click", () => {
+      chatModal.style.display = "none";
+      chatForm.reset();
+    });
+    
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const message = document.getElementById("chat-message").value;
+      const eventId = chatModal.dataset.eventId;
+      // Only logged in users can chat; otherwise, alert
+      if (!currentUser) {
+        alert("Please log in to participate in discussions.");
+        return;
+      }
+      events = events.map(ev => {
+        if (ev.id == eventId) {
+          if (!ev.discussions) ev.discussions = [];
+          ev.discussions.push({
+            sender: currentUser.name,
+            message,
+            timestamp: new Date().toISOString()
+          });
+          return ev;
+        }
+        return ev;
+      });
+      // Re-render chat messages and update storage
+      const eventObj = events.find(ev => ev.id == eventId);
+      renderChatMessages(eventObj);
+      chatForm.reset();
+      saveData();
+    });
+    
+    // -------------------------------
     // Edit Event Modal Handlers
+    // -------------------------------
     function openEditModal(eventObj) {
       editEventIdInput.value = eventObj.id;
       editEventNameInput.value = eventObj.name;

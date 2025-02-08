@@ -332,3 +332,13 @@
     text-decoration: none;
   }
   
+  /* Chat/Discussion Modal Specific Styling */
+  #chat-messages {
+    border: 1px solid #ddd;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+  }
+  
