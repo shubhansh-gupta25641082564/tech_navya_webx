@@ -1,199 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TransitFlow - Smart Public Transport Dashboard</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    /* Global Styles */
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      height: 100vh;
-      background: linear-gradient(135deg, #0A2342, #2A9D8F);
-      color: white;
-    }
-
-    .container {
-      display: flex;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 30%;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-      overflow-y: auto;
-    }
-
-    .sidebar h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      color: #FFD700;
-    }
-
-    .search-bar {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      font-size: 16px;
-    }
-
-    .search-bar::placeholder {
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .route-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-    }
-
-    .route-card:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateX(5px);
-    }
-
-    .route-card strong {
-      font-size: 18px;
-      font-weight: 600;
-      color: #FFD700;
-    }
-
-    .route-card p {
-      margin: 5px 0 0;
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Map Container */
-    .map-container {
-      width: 70%;
-      height: 100vh;
-      position: relative;
-    }
-
-    #map {
-      height: 100%;
-    }
-
-    /* Floating Action Toolkit */
-    .floating-toolkit {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      gap: 10px;
-      z-index: 1000;
-    }
-
-    .toolkit-btn {
-      background: #FFD700;
-      border: none;
-      padding: 12px;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .toolkit-btn:hover {
-      background: #E6C200;
-      transform: scale(1.1);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .sidebar, .map-container {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventSphere</title>
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Header -->
+  <header>
+    <h1>EventSphere</h1>
+  </header>
+
+  <!-- Main Container -->
   <div class="container">
-    <!-- Sidebar for Route Planning -->
-    <div class="sidebar">
-      <h1>TransitFlow</h1>
-      <input type="text" class="search-bar" placeholder="Where to?" />
-      <div class="route-card" onclick="showRoute('Fastest Route')">
-        <strong>Fastest Route</strong>
-        <p>20 mins · ₹50</p>
-      </div>
-      <div class="route-card" onclick="showRoute('Cheapest Route')">
-        <strong>Cheapest Route</strong>
-        <p>30 mins · ₹30</p>
-      </div>
-      <div class="route-card" onclick="showRoute('Comfort Route')">
-        <strong>Comfort Route</strong>
-        <p>25 mins · ₹70</p>
-      </div>
-    </div>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <ul>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#discover">Discover</a></li>
+        <li><a href="#create-event">Create Event</a></li>
+        <li><a href="#tickets">Tickets</a></li>
+        <li><a href="#calendar">Calendar</a></li>
+      </ul>
+    </nav>
 
-    <!-- Interactive Map -->
-    <div class="map-container">
-      <div id="map"></div>
-    </div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Dashboard Section -->
+      <section id="dashboard">
+        <h2>Dashboard</h2>
+        <div class="stats">
+          <div class="card">
+            <h3>Total Events</h3>
+            <p id="total-events">0</p>
+          </div>
+          <div class="card">
+            <h3>Tickets Sold</h3>
+            <p id="tickets-sold">0</p>
+          </div>
+          <div class="card">
+            <h3>Upcoming Events</h3>
+            <p id="upcoming-events">0</p>
+          </div>
+        </div>
+      </section>
 
-    <!-- Floating Action Toolkit -->
-    <div class="floating-toolkit">
-      <button class="toolkit-btn" onclick="toggleAR()">AR</button>
-      <button class="toolkit-btn" onclick="showEmergency()">🚨</button>
-      <button class="toolkit-btn" onclick="followRoute()">📍</button>
+      <!-- Event Creation Section -->
+      <section id="create-event">
+        <h2>Create Event</h2>
+        <form id="create-event-form">
+          <div class="form-group">
+            <label for="event-name">Event Name:</label>
+            <input type="text" id="event-name" required />
+          </div>
+          <div class="form-group">
+            <label for="event-date">Date:</label>
+            <input type="date" id="event-date" required />
+          </div>
+          <div class="form-group">
+            <label for="event-description">Description:</label>
+            <textarea id="event-description" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="ticket-price">Ticket Price:</label>
+            <input type="number" id="ticket-price" required />
+          </div>
+          <div class="form-group">
+            <label for="event-category">Category:</label>
+            <select id="event-category" required>
+              <option value="" disabled selected>Select Category</option>
+              <option value="music">Music</option>
+              <option value="technology">Technology</option>
+              <option value="art">Art</option>
+              <option value="sports">Sports</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <button type="submit">Create Event</button>
+        </form>
+      </section>
+
+      <!-- Discover Events Section -->
+      <section id="discover">
+        <h2>Discover Events</h2>
+        <div class="search-filter">
+          <input type="text" id="search-input" placeholder="Search events..." />
+          <select id="filter-status">
+            <option value="all">All Events</option>
+            <option value="upcoming">Upcoming Events</option>
+            <option value="current">Current Events</option>
+            <option value="past">Past Events</option>
+          </select>
+          <select id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="music">Music</option>
+            <option value="technology">Technology</option>
+            <option value="art">Art</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div id="events-feed" class="events-feed">
+          <!-- Event cards will be added dynamically here -->
+        </div>
+      </section>
+
+      <!-- Calendar Section -->
+      <section id="calendar">
+        <h2>Calendar</h2>
+        <div id="calendar-container"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Ticket Booking Modal -->
+  <div id="ticket-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-ticket-modal" class="close">&times;</span>
+      <h2>Book Ticket</h2>
+      <div id="modal-event-info">
+        <!-- Selected event info will appear here -->
+      </div>
+      <form id="ticket-form">
+        <div class="form-group">
+          <label for="buyer-name">Your Name:</label>
+          <input type="text" id="buyer-name" required />
+        </div>
+        <div class="form-group">
+          <label for="buyer-email">Email:</label>
+          <input type="email" id="buyer-email" required />
+        </div>
+        <button type="submit">Confirm Booking</button>
+      </form>
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Initialize Map
-    const map = L.map('map').setView([12.9716, 77.5946], 13); // Default to Bangalore
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
+  <!-- Edit Event Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-edit-modal" class="close">&times;</span>
+      <h2>Edit Event</h2>
+      <form id="edit-event-form">
+        <input type="hidden" id="edit-event-id" />
+        <div class="form-group">
+          <label for="edit-event-name">Event Name:</label>
+          <input type="text" id="edit-event-name" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-date">Date:</label>
+          <input type="date" id="edit-event-date" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-description">Description:</label>
+          <textarea id="edit-event-description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-ticket-price">Ticket Price:</label>
+          <input type="number" id="edit-ticket-price" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-event-category">Category:</label>
+          <select id="edit-event-category" required>
+            <option value="" disabled>Select Category</option>
+            <option value="music">Music</option>
+            <option value="technology">Technology</option>
+            <option value="art">Art</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
 
-    // Add a sample marker
-    const marker = L.marker([12.9716, 77.5946]).addTo(map)
-      .bindPopup('Central Station')
-      .openPopup();
-
-    // Route Planner Functions
-    function showRoute(routeName) {
-      alert(`Selected: ${routeName}`);
-      // Add logic to highlight route on the map
-    }
-
-    // Floating Toolkit Functions
-    function toggleAR() {
-      alert('AR Mode Activated');
-    }
-
-    function showEmergency() {
-      alert('Nearest Emergency Services: 2 km');
-    }
-
-    function followRoute() {
-      alert('Following your route...');
-    }
-  </script>
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
