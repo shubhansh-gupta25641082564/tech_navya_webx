@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let ticketsSold = 0;
     let currentUser = null;
   
-    // Load events, ticketsSold, and currentUser from localStorage
     function loadData() {
       const eventsData = localStorage.getItem("eventsData");
       if (eventsData) {
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       currentUser = userData ? JSON.parse(userData) : null;
     }
   
-    // Save events, ticketsSold, and currentUser to localStorage
     function saveData() {
       localStorage.setItem("eventsData", JSON.stringify(events));
       localStorage.setItem("ticketsSold", ticketsSold.toString());
@@ -127,6 +125,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const registerModal = document.getElementById("register-modal");
     const closeRegisterModalBtn = document.getElementById("close-register-modal");
     const registerForm = document.getElementById("register-form");
+  
+    // NEW: Map Modal Elements
+    const mapModal = document.getElementById("map-modal");
+    const closeMapModalBtn = document.getElementById("close-map-modal");
   
     // Search and Filter Controls
     const searchInput = document.getElementById("search-input");
@@ -239,7 +241,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // -------------------------------
-    // Create Event Card with Chat/Discussion, Reviews & Ratings
+    // Map Integration (Feature 12) - Using existing code from previous steps if needed
+    // -------------------------------
+    function geocodeAddress(address) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+      return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          } else {
+            throw new Error("Location not found.");
+          }
+        });
+    }
+    
+    function openMapModal(eventObj) {
+      if (!eventObj.location) {
+        alert("No location provided for this event.");
+        return;
+      }
+      geocodeAddress(eventObj.location)
+        .then(coords => {
+          mapModal.style.display = "block";
+          const mapContainer = document.getElementById("map");
+          mapContainer.innerHTML = "";
+          const map = L.map("map").setView([coords.lat, coords.lon], 13);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+          L.marker([coords.lat, coords.lon]).addTo(map)
+            .bindPopup(`<b>${eventObj.name}</b><br>${eventObj.location}`)
+            .openPopup();
+        })
+        .catch(err => {
+          alert("Error: " + err.message);
+        });
+    }
+    
+    // -------------------------------
+    // Create Event Card with Chat, Reviews, and Map Integration
     // -------------------------------
     function createEventCard(event) {
       const card = document.createElement("div");
@@ -265,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>${event.description}</p>
           <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
           <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
+          <p><strong>Location:</strong> ${event.location || "Not specified"}</p>
           <p><strong>Average Rating:</strong> ${averageRating}</p>
           <p class="rsvp-count"><strong>RSVPs:</strong> ${event.rsvpCount ? event.rsvpCount : 0}</p>
           <div class="action-buttons">
@@ -272,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="rsvp-event" data-id="${event.id}">RSVP</button>
             <button class="review-event" data-id="${event.id}">Review</button>
             <button class="chat-event" data-id="${event.id}">Chat</button>
+            <button class="map-event" data-id="${event.id}">Show Map</button>
             <button class="edit-event" data-id="${event.id}">Edit Event</button>
             <button class="delete-event" data-id="${event.id}">Delete Event</button>
           </div>
@@ -348,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = document.getElementById("event-description").value;
       const ticketPrice = document.getElementById("ticket-price").value;
       const category = document.getElementById("event-category").value;
+      const location = document.getElementById("event-location").value;
       const imageInput = document.getElementById("event-image");
       const file = imageInput.files[0];
     
@@ -359,10 +403,11 @@ document.addEventListener("DOMContentLoaded", () => {
           description,
           ticketPrice,
           category,
+          location,
           image: imageData,
           rsvpCount: 0,
           reviews: [],
-          discussions: [],  // Initialize discussions array for chat
+          discussions: [],
           createdBy: currentUser ? currentUser.email : null
         };
         events.unshift(eventObj);
@@ -417,6 +462,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openChatModal(eventObj);
+        }
+      }
+    
+      if (e.target.classList.contains("map-event")) {
+        const eventObj = events.find(ev => ev.id == eventId);
+        if (eventObj) {
+          openMapModal(eventObj);
         }
       }
     
@@ -547,14 +599,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Chat/Discussion Modal Handlers
     // -------------------------------
     function openChatModal(eventObj) {
-      // Render existing discussion messages
       renderChatMessages(eventObj);
       chatModal.dataset.eventId = eventObj.id;
       chatModal.style.display = "block";
     }
     
     function renderChatMessages(eventObj) {
-      // eventObj.discussions is an array of message objects: { sender, message, timestamp }
       if (!eventObj.discussions) eventObj.discussions = [];
       chatMessagesDiv.innerHTML = "";
       eventObj.discussions.forEach(msg => {
@@ -574,7 +624,6 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const message = document.getElementById("chat-message").value;
       const eventId = chatModal.dataset.eventId;
-      // Only logged in users can chat; otherwise, alert
       if (!currentUser) {
         alert("Please log in to participate in discussions.");
         return;
@@ -591,12 +640,50 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return ev;
       });
-      // Re-render chat messages and update storage
       const eventObj = events.find(ev => ev.id == eventId);
       renderChatMessages(eventObj);
       chatForm.reset();
       saveData();
     });
+    
+    // -------------------------------
+    // Map Integration (Feature 12 - Using existing code for location)
+    // -------------------------------
+    function openMapModal(eventObj) {
+      if (!eventObj.location) {
+        alert("No location provided for this event.");
+        return;
+      }
+      geocodeAddress(eventObj.location)
+        .then(coords => {
+          mapModal.style.display = "block";
+          const mapContainer = document.getElementById("map");
+          mapContainer.innerHTML = "";
+          const map = L.map("map").setView([coords.lat, coords.lon], 13);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+          L.marker([coords.lat, coords.lon]).addTo(map)
+            .bindPopup(`<b>${eventObj.name}</b><br>${eventObj.location}`)
+            .openPopup();
+        })
+        .catch(err => {
+          alert("Error: " + err.message);
+        });
+    }
+    
+    function geocodeAddress(address) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+      return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          } else {
+            throw new Error("Location not found.");
+          }
+        });
+    }
     
     // -------------------------------
     // Edit Event Modal Handlers

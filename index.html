@@ -6,6 +6,12 @@
   <title>EventSphere</title>
   <!-- FullCalendar CSS (if using Calendar Integration) -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <!-- Leaflet CSS for Map Integration (if needed in future) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-sA+e+OaZ+xyA3nI+x84s6v7cGXLM5I9dwXq7jB6J+9Y=" crossorigin=""/>
+  <!-- Google Font for a modern look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -87,7 +93,12 @@
               <option value="other">Other</option>
             </select>
           </div>
-          <!-- New Image Upload Field -->
+          <!-- NEW: Location Field -->
+          <div class="form-group">
+            <label for="event-location">Location (Address):</label>
+            <input type="text" id="event-location" required />
+          </div>
+          <!-- Image Upload Field -->
           <div class="form-group">
             <label for="event-image">Event Image:</label>
             <input type="file" id="event-image" accept="image/*" />
@@ -121,7 +132,7 @@
         </div>
       </section>
 
-      <!-- Calendar Section (if using Calendar Integration) -->
+      <!-- Calendar Section -->
       <section id="calendar">
         <h2>Calendar</h2>
         <div id="calendar-container"></div>
@@ -134,9 +145,7 @@
     <div class="modal-content">
       <span id="close-ticket-modal" class="close">&times;</span>
       <h2>Book Ticket</h2>
-      <div id="modal-event-info">
-        <!-- Selected event info will appear here -->
-      </div>
+      <div id="modal-event-info"></div>
       <form id="ticket-form">
         <div class="form-group">
           <label for="buyer-name">Your Name:</label>
@@ -185,7 +194,7 @@
             <option value="other">Other</option>
           </select>
         </div>
-        <!-- New Image Upload Field for Editing -->
+        <!-- Image Upload Field for Editing -->
         <div class="form-group">
           <label for="edit-event-image">Event Image:</label>
           <input type="file" id="edit-event-image" accept="image/*" />
@@ -200,9 +209,7 @@
     <div class="modal-content">
       <span id="close-rsvp-modal" class="close">&times;</span>
       <h2>RSVP to Event</h2>
-      <div id="rsvp-modal-info">
-        <!-- Event details for RSVP will appear here -->
-      </div>
+      <div id="rsvp-modal-info"></div>
       <form id="rsvp-form">
         <div class="form-group">
           <label for="rsvp-name">Your Name:</label>
@@ -222,9 +229,7 @@
     <div class="modal-content">
       <span id="close-review-modal" class="close">&times;</span>
       <h2>Leave a Review</h2>
-      <div id="review-modal-info">
-        <!-- Event details for review will appear here -->
-      </div>
+      <div id="review-modal-info"></div>
       <form id="review-form">
         <div class="form-group">
           <label for="review-rating">Rating (1-5):</label>
@@ -251,9 +256,7 @@
     <div class="modal-content">
       <span id="close-chat-modal" class="close">&times;</span>
       <h2>Event Discussion</h2>
-      <div id="chat-messages">
-        <!-- Chat messages will be displayed here -->
-      </div>
+      <div id="chat-messages"></div>
       <form id="chat-form">
         <div class="form-group">
           <label for="chat-message">Your Message:</label>
@@ -261,6 +264,15 @@
         </div>
         <button type="submit">Send Message</button>
       </form>
+    </div>
+  </div>
+
+  <!-- NEW: Map Modal -->
+  <div id="map-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-map-modal" class="close">&times;</span>
+      <h2>Event Location Map</h2>
+      <div id="map"></div>
     </div>
   </div>
 
@@ -308,6 +320,8 @@
 
   <!-- FullCalendar JS (if using Calendar Integration) -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <!-- Leaflet JS for Map Integration -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Dotd70R3H8k3z6BpoXv3FRP46TCW5nH/TJDbbCXGgN0=" crossorigin=""></script>
   <script src="script.js"></script>
 </body>
 </html>
