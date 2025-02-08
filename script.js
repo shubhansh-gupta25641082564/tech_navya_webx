@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
           events = [];
         }
+      } else {
+        events = [];
       }
       const tickets = localStorage.getItem("ticketsSold");
       ticketsSold = tickets ? parseInt(tickets) : 0;
@@ -30,10 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
     }
   
+    // Load persisted data on page load
+    loadData();
+  
     // -------------------------------
     // User Authentication Functions
     // -------------------------------
-    // Users are stored in localStorage under "users" as an array
     function loadUsers() {
       const usersData = localStorage.getItem("users");
       return usersData ? JSON.parse(usersData) : [];
@@ -41,8 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function saveUsers(users) {
       localStorage.setItem("users", JSON.stringify(users));
     }
-  
-    // Update header UI based on authentication state
     function updateUserUI() {
       const userAuthDiv = document.getElementById("user-auth");
       userAuthDiv.innerHTML = "";
@@ -69,11 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
-  
-    // -------------------------------
-    // Load persisted data
-    // -------------------------------
-    loadData();
     updateUserUI();
   
     // -------------------------------
@@ -125,20 +122,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterStatusSelect = document.getElementById("filter-status");
     const filterCategorySelect = document.getElementById("filter-category");
   
-    // Initialize FullCalendar (if using calendar integration)
+    // -------------------------------
+    // FullCalendar Initialization
+    // -------------------------------
     const calendarEl = document.getElementById("calendar-container");
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth'
     });
     calendar.render();
   
-    // Utility: Create a date object for today with no time (midnight)
+    // -------------------------------
+    // Utility Functions
+    // -------------------------------
     function getTodayNoTime() {
       const now = new Date();
       return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
   
-    // Function to validate an image file (extension, size, and dimensions)
+    // Validate image file
     function validateImage(file, onValid, onError) {
       const allowedExtensions = ["jpg", "jpeg", "png"];
       const fileName = file.name;
@@ -147,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
         onError("Unsupported file type. Allowed types: JPG, JPEG, PNG.");
         return;
       }
-      const maxSize = 2 * 1024 * 1024; // 2MB limit
+      const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
         onError("File size exceeds 2MB limit.");
         return;
@@ -180,7 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
       reader.readAsDataURL(file);
     }
   
-    // Update the dashboard stats
+    // -------------------------------
+    // Dashboard Update & Calendar
+    // -------------------------------
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
       const todayNoTime = getTodayNoTime();
@@ -195,8 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       totalRsvpsEl.textContent = totalRsvp;
     }
-  
-    // Update the calendar with all events
+    
     function updateCalendarEvents() {
       calendar.removeAllEvents();
       events.forEach(ev => {
@@ -211,13 +213,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     }
-  
-    // Helper function to generate a shareable URL for an event
+    
+    // Helper: generate shareable URL
     function getEventUrl(event) {
       return encodeURIComponent("https://example.com/event?id=" + event.id);
     }
-  
-    // Create an event card element from an event object
+    
+    // -------------------------------
+    // Create Event Card
+    // -------------------------------
     function createEventCard(event) {
       const card = document.createElement("div");
       card.classList.add("event-card");
@@ -258,7 +262,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return card;
     }
     
-    // Render events with search, status, and category filtering applied
+    // -------------------------------
+    // Render Events
+    // -------------------------------
     function renderEvents() {
       const searchQuery = searchInput.value.toLowerCase();
       const filterStatus = filterStatusSelect.value;
@@ -302,10 +308,53 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
-    // Handle new event creation with image upload support and validations
+    // -------------------------------
+    // Notifications and Reminders Feature
+    // -------------------------------
+    // For demonstration: if an event is scheduled for tomorrow, show a reminder after 5 seconds.
+    function checkReminders() {
+      // Get tomorrow's date in "YYYY-MM-DD" format
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
+      const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+    
+      events.forEach(ev => {
+        if (ev.date === tomorrowStr) {
+          // Request notification permission if needed
+          if (Notification.permission === "granted") {
+            setTimeout(() => {
+              new Notification("Reminder: " + ev.name, {
+                body: "Your event is scheduled for tomorrow!",
+                icon: ev.image || ""
+              });
+            }, 5000);
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+              if (permission === "granted") {
+                setTimeout(() => {
+                  new Notification("Reminder: " + ev.name, {
+                    body: "Your event is scheduled for tomorrow!",
+                    icon: ev.image || ""
+                  });
+                }, 5000);
+              }
+            });
+          }
+        }
+      });
+    }
+    
+    // -------------------------------
+    // Event Handlers
+    // -------------------------------
+    
+    // Create Event
     createEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      // Optionally, you can require the user to be logged in before creating an event.
       if (!currentUser) {
         alert("Please log in to create an event.");
         return;
@@ -330,13 +379,13 @@ document.addEventListener("DOMContentLoaded", () => {
           rsvpCount: 0,
           createdBy: currentUser ? currentUser.email : null
         };
-    
         events.unshift(eventObj);
         renderEvents();
         updateDashboard();
         updateCalendarEvents();
         createEventForm.reset();
         saveData();
+        checkReminders();
       }
     
       if (file) {
@@ -353,24 +402,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Delegate click events for booking, editing, deleting, and RSVPing events
+    // Event delegation for action buttons
     eventsFeed.addEventListener("click", (e) => {
       const eventId = e.target.getAttribute("data-id");
-    
       if (e.target.classList.contains("book-ticket")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openTicketModal(eventObj);
         }
       }
-    
       if (e.target.classList.contains("rsvp-event")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
           openRsvpModal(eventObj);
         }
       }
-    
       if (e.target.classList.contains("delete-event")) {
         events = events.filter(ev => ev.id != eventId);
         renderEvents();
@@ -378,7 +424,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCalendarEvents();
         saveData();
       }
-    
       if (e.target.classList.contains("edit-event")) {
         const eventObj = events.find(ev => ev.id == eventId);
         if (eventObj) {
@@ -387,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Open the ticket booking modal and display event details
+    // Ticket Booking Modal Handlers
     function openTicketModal(eventObj) {
       modalEventInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
@@ -416,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveData();
     });
     
-    // Open the RSVP modal and pre-fill with event details
+    // RSVP Modal Handlers
     function openRsvpModal(eventObj) {
       rsvpModalInfo.innerHTML = `
         <p><strong>Event:</strong> ${eventObj.name}</p>
@@ -452,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveData();
     });
     
-    // Open the edit modal and pre-fill with event details
+    // Edit Event Modal Handlers
     function openEditModal(eventObj) {
       editEventIdInput.value = eventObj.id;
       editEventNameInput.value = eventObj.name;
@@ -517,7 +562,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Authentication: Login
+    // -------------------------------
+    // Authentication Handlers
+    // -------------------------------
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const email = document.getElementById("login-email").value.trim().toLowerCase();
@@ -541,7 +588,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loginForm.reset();
     });
     
-    // Authentication: Register
     registerForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("register-name").value.trim();
@@ -565,13 +611,58 @@ document.addEventListener("DOMContentLoaded", () => {
       registerForm.reset();
     });
     
-    // Search and filter event listeners
+    // -------------------------------
+    // Reminders & Notifications
+    // -------------------------------
+    function checkReminders() {
+      // For demonstration, we assume that if an event is scheduled for tomorrow,
+      // we show a reminder notification after 5 seconds.
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
+      const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+    
+      events.forEach(ev => {
+        if (ev.date === tomorrowStr) {
+          if (Notification.permission === "granted") {
+            setTimeout(() => {
+              new Notification("Reminder: " + ev.name, {
+                body: "Your event is scheduled for tomorrow!",
+                icon: ev.image || ""
+              });
+            }, 5000);
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+              if (permission === "granted") {
+                setTimeout(() => {
+                  new Notification("Reminder: " + ev.name, {
+                    body: "Your event is scheduled for tomorrow!",
+                    icon: ev.image || ""
+                  });
+                }, 5000);
+              }
+            });
+          }
+        }
+      });
+    }
+    
+    // -------------------------------
+    // Search & Filter Event Listeners
+    // -------------------------------
     searchInput.addEventListener("input", renderEvents);
     filterStatusSelect.addEventListener("change", renderEvents);
     filterCategorySelect.addEventListener("change", renderEvents);
     
+    // -------------------------------
+    // Initial Updates on Page Load
+    // -------------------------------
     updateDashboard();
     renderEvents();
     updateCalendarEvents();
+    checkReminders();
   });
   
