@@ -6,83 +6,129 @@
   <title>TransitFlow - Smart Public Transport Dashboard</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
+    /* Global Styles */
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       height: 100vh;
-      background: #f4f4f9;
+      background: linear-gradient(135deg, #0A2342, #2A9D8F);
+      color: white;
     }
 
     .container {
       display: flex;
       width: 100%;
+      overflow: hidden;
     }
 
+    /* Sidebar */
     .sidebar {
       width: 30%;
-      background: #0A2342;
-      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
       padding: 20px;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      overflow-y: auto;
     }
 
     .sidebar h1 {
-      font-size: 24px;
+      font-size: 28px;
+      font-weight: 700;
       margin-bottom: 20px;
+      color: #FFD700;
     }
 
     .search-bar {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 16px;
+    }
+
+    .search-bar::placeholder {
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .route-card {
-      background: #2A9D8F;
+      background: rgba(255, 255, 255, 0.1);
       padding: 15px;
-      border-radius: 5px;
+      border-radius: 8px;
       margin-bottom: 10px;
       cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
     }
 
     .route-card:hover {
-      background: #21867A;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(5px);
     }
 
+    .route-card strong {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FFD700;
+    }
+
+    .route-card p {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Map Container */
     .map-container {
       width: 70%;
       height: 100vh;
+      position: relative;
     }
 
     #map {
       height: 100%;
     }
 
+    /* Floating Action Toolkit */
     .floating-toolkit {
       position: absolute;
       bottom: 20px;
       right: 20px;
       display: flex;
       gap: 10px;
+      z-index: 1000;
     }
 
     .toolkit-btn {
       background: #FFD700;
       border: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .toolkit-btn:hover {
       background: #E6C200;
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sidebar, .map-container {
+      animation: fadeIn 0.5s ease-in-out;
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
