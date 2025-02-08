@@ -153,7 +153,7 @@
     padding: 0; /* Remove extra padding since image will cover the card */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     width: 500px;
-    height: 330px;
+    height: 373px;
     overflow: hidden;
   }  
   
@@ -259,4 +259,49 @@
     color: #000;
     text-decoration: none;
   }
+
+  /* Social Share Buttons Styling */
+.share-buttons {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+  }
   
+  .share-buttons span {
+    font-weight: bold;
+  }
+  
+  .share-buttons a {
+    text-decoration: none;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+  }
+  
+  .share-buttons a.facebook {
+    background-color: #3b5998;
+  }
+  
+  .share-buttons a.facebook:hover {
+    background-color: #2d4373;
+  }
+  
+  .share-buttons a.twitter {
+    background-color: #1da1f2;
+  }
+  
+  .share-buttons a.twitter:hover {
+    background-color: #0d95e8;
+  }
+  
+  .share-buttons a.linkedin {
+    background-color: #0077b5;
+  }
+  
+  .share-buttons a.linkedin:hover {
+    background-color: #005983;
+  }  

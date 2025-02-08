@@ -117,30 +117,50 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     }
+
+    // Helper function to generate a shareable URL for an event
+function getEventUrl(event) {
+    // For demonstration, we use a dummy base URL. Replace with your actual event URL.
+    return encodeURIComponent("https://example.com/event?id=" + event.id);
+  }
   
     // Create an event card element from an event object
 function createEventCard(event) {
-  const card = document.createElement("div");
-  card.classList.add("event-card");
-  let imageHTML = "";
-  if (event.image) {
-    imageHTML = `<img src="${event.image}" class="event-image" alt="Event Image">`;
+    const card = document.createElement("div");
+    card.classList.add("event-card");
+    let imageHTML = "";
+    if (event.image) {
+      imageHTML = `<img src="${event.image}" class="event-image" alt="Event Image">`;
+    }
+    
+    // Generate social share URLs using the event URL and title
+    const eventUrl = getEventUrl(event);
+    const shareText = encodeURIComponent("Check out this event: " + event.name);
+    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${eventUrl}`;
+    const twitterShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${eventUrl}`;
+    const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${eventUrl}`;
+  
+    card.innerHTML = `
+      ${imageHTML}
+      <div class="card-content">
+        <h3>${event.name}</h3>
+        <p class="event-date">${event.date}</p>
+        <p>${event.description}</p>
+        <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
+        <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
+        <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
+        <button class="edit-event" data-id="${event.id}">Edit Event</button>
+        <button class="delete-event" data-id="${event.id}">Delete Event</button>
+        <div class="share-buttons">
+          <span>Share: </span>
+          <a href="${facebookShareUrl}" target="_blank" class="share-btn facebook">Facebook</a>
+          <a href="${twitterShareUrl}" target="_blank" class="share-btn twitter">Twitter</a>
+          <a href="${linkedInShareUrl}" target="_blank" class="share-btn linkedin">LinkedIn</a>
+        </div>
+      </div>
+    `;
+    return card;
   }
-  card.innerHTML = `
-    ${imageHTML}
-    <div class="card-content">
-      <h3>${event.name}</h3>
-      <p class="event-date">${event.date}</p>
-      <p>${event.description}</p>
-      <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
-      <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
-      <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
-      <button class="edit-event" data-id="${event.id}">Edit Event</button>
-      <button class="delete-event" data-id="${event.id}">Delete Event</button>
-    </div>
-  `;
-  return card;
-}
   
     // Render events with search, status, and category filtering applied
     function renderEvents() {
