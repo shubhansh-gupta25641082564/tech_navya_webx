@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const editEventDescriptionInput = document.getElementById("edit-event-description");
     const editTicketPriceInput = document.getElementById("edit-ticket-price");
     const editEventCategorySelect = document.getElementById("edit-event-category");
+    const editEventImageInput = document.getElementById("edit-event-image");
   
     // Search and Filter Controls
     const searchInput = document.getElementById("search-input");
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let events = [];
     let ticketsSold = 0;
   
-    // Initialize FullCalendar
+    // Initialize FullCalendar (if using calendar integration)
     const calendarEl = document.getElementById("calendar-container");
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth'
@@ -46,11 +47,54 @@ document.addEventListener("DOMContentLoaded", () => {
       return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
   
+    // Function to validate an image file (extension, size, and dimensions)
+    function validateImage(file, onValid, onError) {
+      const allowedExtensions = ["jpg", "jpeg", "png"];
+      const fileName = file.name;
+      const fileExtension = fileName.split('.').pop().toLowerCase();
+      if (!allowedExtensions.includes(fileExtension)) {
+        onError("Unsupported file type. Allowed types: JPG, JPEG, PNG.");
+        return;
+      }
+      const maxSize = 2 * 1024 * 1024; // 2MB limit
+      if (file.size > maxSize) {
+        onError("File size exceeds 2MB limit.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        const img = new Image();
+        img.onload = function() {
+          const width = img.width;
+          const height = img.height;
+          // Check dimensions (minimum 300x300, maximum 2000x2000)
+          if (width < 150 || height < 150) {
+            onError("Image dimensions are too small. Minimum size is 150x150 pixels.");
+            return;
+          }
+          if (width > 300 || height > 300) {
+            onError("Image dimensions are too large. Maximum allowed is 300x300 pixels.");
+            return;
+          }
+          onValid(dataUrl);
+        };
+        img.onerror = function() {
+          onError("Error loading image. Please select a valid image file.");
+        };
+        img.src = dataUrl;
+      };
+      reader.onerror = function() {
+        onError("Error reading file.");
+      };
+      reader.readAsDataURL(file);
+    }
+  
     // Update the dashboard stats
     function updateDashboard() {
       totalEventsEl.textContent = events.length;
       const todayNoTime = getTodayNoTime();
-      // Upcoming events: only events scheduled after today (current events excluded)
+      // Upcoming events: only events scheduled after today (excluding current)
       upcomingEventsEl.textContent = events.filter(ev => {
         const eventDate = new Date(ev.date + "T00:00:00");
         return eventDate > todayNoTime;
@@ -65,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         calendar.addEvent({
           id: ev.id.toString(),
           title: ev.name,
-          start: ev.date, // Assumes format "YYYY-MM-DD"
+          start: ev.date, // Expected format "YYYY-MM-DD"
           extendedProps: {
             description: ev.description,
             category: ev.category
@@ -75,21 +119,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     // Create an event card element from an event object
-    function createEventCard(event) {
-      const card = document.createElement("div");
-      card.classList.add("event-card");
-      card.innerHTML = `
-        <h3>${event.name}</h3>
-        <p class="event-date">${event.date}</p>
-        <p>${event.description}</p>
-        <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
-        <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
-        <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
-        <button class="edit-event" data-id="${event.id}">Edit Event</button>
-        <button class="delete-event" data-id="${event.id}">Delete Event</button>
-      `;
-      return card;
-    }
+function createEventCard(event) {
+  const card = document.createElement("div");
+  card.classList.add("event-card");
+  let imageHTML = "";
+  if (event.image) {
+    imageHTML = `<img src="${event.image}" class="event-image" alt="Event Image">`;
+  }
+  card.innerHTML = `
+    ${imageHTML}
+    <div class="card-content">
+      <h3>${event.name}</h3>
+      <p class="event-date">${event.date}</p>
+      <p>${event.description}</p>
+      <p><strong>Ticket Price:</strong> $${event.ticketPrice}</p>
+      <p><strong>Category:</strong> ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}</p>
+      <button class="book-ticket" data-id="${event.id}">Book Ticket</button>
+      <button class="edit-event" data-id="${event.id}">Edit Event</button>
+      <button class="delete-event" data-id="${event.id}">Delete Event</button>
+    </div>
+  `;
+  return card;
+}
   
     // Render events with search, status, and category filtering applied
     function renderEvents() {
@@ -108,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
       const todayNoTime = getTodayNoTime();
   
-      // Filter based on status: upcoming, current, or past
+      // Filter based on event status
       if (filterStatus === "upcoming") {
         filteredEvents = filteredEvents.filter(ev => {
           const eventDate = new Date(ev.date + "T00:00:00");
@@ -139,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   
-    // Handle new event creation
+    // Handle new event creation with image upload support and validations
     createEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("event-name").value;
@@ -147,23 +198,40 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = document.getElementById("event-description").value;
       const ticketPrice = document.getElementById("ticket-price").value;
       const category = document.getElementById("event-category").value;
+      const imageInput = document.getElementById("event-image");
+      const file = imageInput.files[0];
   
-      // Create an event object with a unique ID and the selected category
-      const eventObj = {
-        id: Date.now(),
-        name,
-        date,
-        description,
-        ticketPrice,
-        category
-      };
+      // Function to add event (with optional imageData)
+      function addEvent(imageData = null) {
+        const eventObj = {
+          id: Date.now(),
+          name,
+          date,
+          description,
+          ticketPrice,
+          category,
+          image: imageData
+        };
   
-      // Add new event to the beginning of the events array
-      events.unshift(eventObj);
-      renderEvents();
-      updateDashboard();
-      updateCalendarEvents();
-      createEventForm.reset();
+        events.unshift(eventObj);
+        renderEvents();
+        updateDashboard();
+        updateCalendarEvents();
+        createEventForm.reset();
+      }
+  
+      if (file) {
+        validateImage(file,
+          function(dataUrl) {
+            addEvent(dataUrl);
+          },
+          function(errorMsg) {
+            alert(errorMsg);
+          }
+        );
+      } else {
+        addEvent();
+      }
     });
   
     // Delegate click events for booking, editing, and deleting events
@@ -218,7 +286,6 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const buyerName = document.getElementById("buyer-name").value;
       const buyerEmail = document.getElementById("buyer-email").value;
-      // Simulate ticket booking confirmation (backend integration can be added here)
       alert(
         `Ticket booked successfully for ${buyerName}!\nConfirmation sent to ${buyerEmail}.`
       );
@@ -236,6 +303,8 @@ document.addEventListener("DOMContentLoaded", () => {
       editEventDescriptionInput.value = eventObj.description;
       editTicketPriceInput.value = eventObj.ticketPrice;
       editEventCategorySelect.value = eventObj.category;
+      // Clear the file input so user may choose a new image if desired
+      editEventImageInput.value = "";
       editModal.style.display = "block";
     }
   
@@ -245,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editEventForm.reset();
     });
   
-    // Handle edit event form submission
+    // Handle edit event form submission with image update support and validations
     editEventForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const id = editEventIdInput.value;
@@ -254,26 +323,45 @@ document.addEventListener("DOMContentLoaded", () => {
       const updatedDescription = editEventDescriptionInput.value;
       const updatedTicketPrice = editTicketPriceInput.value;
       const updatedCategory = editEventCategorySelect.value;
+      const imageInput = editEventImageInput;
+      const file = imageInput.files[0];
   
-      // Update the event in the events array
-      events = events.map(ev => {
-        if (ev.id == id) {
-          return {
-            ...ev,
-            name: updatedName,
-            date: updatedDate,
-            description: updatedDescription,
-            ticketPrice: updatedTicketPrice,
-            category: updatedCategory
-          };
-        }
-        return ev;
-      });
-      renderEvents();
-      updateDashboard();
-      updateCalendarEvents();
-      editModal.style.display = "none";
-      editEventForm.reset();
+      // Function to update the event (with new imageData if provided)
+      function updateEvent(imageData) {
+        events = events.map(ev => {
+          if (ev.id == id) {
+            return {
+              ...ev,
+              name: updatedName,
+              date: updatedDate,
+              description: updatedDescription,
+              ticketPrice: updatedTicketPrice,
+              category: updatedCategory,
+              // Use new image if provided; otherwise keep the existing image
+              image: imageData !== undefined ? imageData : ev.image
+            };
+          }
+          return ev;
+        });
+        renderEvents();
+        updateDashboard();
+        updateCalendarEvents();
+        editModal.style.display = "none";
+        editEventForm.reset();
+      }
+  
+      if (file) {
+        validateImage(file,
+          function(dataUrl) {
+            updateEvent(dataUrl);
+          },
+          function(errorMsg) {
+            alert(errorMsg);
+          }
+        );
+      } else {
+        updateEvent(); // No new image selected; keep existing image.
+      }
     });
   
     // Event listeners for search and filter controls

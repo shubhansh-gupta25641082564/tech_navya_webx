@@ -137,19 +137,25 @@
   }
   
   /* Events Feed Grid */
-  .events-feed {
+.events-feed {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* Adjust the fixed width as needed (here using 500px as in your code) */
+    grid-template-columns: repeat(auto-fit, 500px);
     gap: 20px;
+    justify-content: center;
   }
   
   /* Event Card Styling */
-  .event-card {
+.event-card {
+    position: relative; /* To position the image and overlay content */
     background-color: #fff;
     border-radius: 4px;
-    padding: 15px;
+    padding: 0; /* Remove extra padding since image will cover the card */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+    width: 500px;
+    height: 330px;
+    overflow: hidden;
+  }  
   
   .event-card h3 {
     margin-bottom: 10px;
@@ -163,6 +169,45 @@
     font-size: 0.9em;
     color: #777;
     margin-bottom: 10px;
+  }
+  
+  /* Style for the image that covers the entire card */
+.event-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    /* Optional: add a slight brightness filter if needed */
+    filter: brightness(0.75);
+  }
+
+  /* Overlay container for text and buttons */
+.card-content {
+    position: relative;
+    z-index: 2;
+    /* Optional: add a semi-transparent background for readability */
+    background: rgba(255, 255, 255, 0.5);
+    padding: 15px;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  /* Ensure headings and text inside card-content have proper spacing */
+.card-content h3 {
+    margin-bottom: 10px;
+  }
+  
+  .card-content p {
+    margin-bottom: 10px;
+  }
+  
+  /* Button styling remains the same */
+  .card-content button {
+    width: 100%;
+    margin-bottom: 5px;
   }
   
   .event-card button {

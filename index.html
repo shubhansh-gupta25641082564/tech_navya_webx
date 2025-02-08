@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EventSphere</title>
-  <!-- FullCalendar CSS -->
+  <!-- FullCalendar CSS (if using Calendar Integration) -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -79,6 +79,11 @@
               <option value="other">Other</option>
             </select>
           </div>
+          <!-- New Image Upload Field -->
+          <div class="form-group">
+            <label for="event-image">Event Image:</label>
+            <input type="file" id="event-image" accept="image/*" />
+          </div>
           <button type="submit">Create Event</button>
         </form>
       </section>
@@ -108,7 +113,7 @@
         </div>
       </section>
 
-      <!-- Calendar Section -->
+      <!-- Calendar Section (if using Calendar Integration) -->
       <section id="calendar">
         <h2>Calendar</h2>
         <div id="calendar-container"></div>
@@ -172,12 +177,17 @@
             <option value="other">Other</option>
           </select>
         </div>
+        <!-- New Image Upload Field for Editing -->
+        <div class="form-group">
+          <label for="edit-event-image">Event Image:</label>
+          <input type="file" id="edit-event-image" accept="image/*" />
+        </div>
         <button type="submit">Save Changes</button>
       </form>
     </div>
   </div>
 
-  <!-- FullCalendar JS -->
+  <!-- FullCalendar JS (if using Calendar Integration) -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="script.js"></script>
 </body>
