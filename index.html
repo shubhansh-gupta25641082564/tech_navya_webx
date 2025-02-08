@@ -1,70 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TransitFlow - Smart Public Transport Dashboard</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventSphere</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>TransitFlow</h1>
-            <div class="user-controls">
-                <button class="alert-button">Service Alerts</button>
-                <div class="user-profile">JD</div>
-            </div>
-        </header>
+  <!-- Header -->
+  <header>
+    <h1>EventSphere</h1>
+  </header>
 
-        <aside class="trip-planner">
-            <h2>Plan Your Trip</h2>
-            <div class="input-group">
-                <input type="text" placeholder="Starting point" id="start-point">
-                <input type="text" placeholder="Destination" id="end-point">
-                <select id="travel-mode">
-                    <option value="fastest">Fastest Route</option>
-                    <option value="eco">Eco Friendly</option>
-                    <option value="accessible">Wheelchair Accessible</option>
-                </select>
-                <button id="plan-trip">Generate Itinerary</button>
-            </div>
-            <div class="fare-estimate">
-                <h3>Estimated Fare: <span id="fare-amount">$4.50</span></h3>
-                <div class="seat-availability">
-                    <div class="seat-indicator high"></div>
-                    <span>Seat Availability</span>
-                </div>
-            </div>
-        </aside>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <ul>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#discover">Discover</a></li>
+        <li><a href="#create-event">Create Event</a></li>
+        <li><a href="#tickets">Tickets</a></li>
+      </ul>
+    </nav>
 
-        <main class="map-container">
-            <div id="live-map"></div>
-            <div class="map-controls">
-                <button class="map-btn" id="locate-me">📍</button>
-                <button class="map-btn" id="zoom-in">+</button>
-                <button class="map-btn" id="zoom-out">-</button>
-            </div>
-        </main>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Dashboard Section -->
+      <section id="dashboard">
+        <h2>Dashboard</h2>
+        <div class="stats">
+          <div class="card">
+            <h3>Total Events</h3>
+            <p id="total-events">0</p>
+          </div>
+          <div class="card">
+            <h3>Tickets Sold</h3>
+            <p id="tickets-sold">0</p>
+          </div>
+          <div class="card">
+            <h3>Upcoming Events</h3>
+            <p id="upcoming-events">0</p>
+          </div>
+        </div>
+      </section>
 
-        <section class="itinerary">
-            <h2>Suggested Itinerary</h2>
-            <div class="route-steps">
-                <div class="route-step">
-                    <span class="transport-icon">🚌</span>
-                    <div class="step-details">
-                        <h3>Bus 24X</h3>
-                        <p>Next arrival: 3 min</p>
-                        <p>15 seats available</p>
-                    </div>
-                </div>
-                <!-- More steps would be dynamically added -->
-            </div>
-        </section>
+      <!-- Event Creation Section -->
+      <section id="create-event">
+        <h2>Create Event</h2>
+        <form id="create-event-form">
+          <div class="form-group">
+            <label for="event-name">Event Name:</label>
+            <input type="text" id="event-name" required />
+          </div>
+          <div class="form-group">
+            <label for="event-date">Date:</label>
+            <input type="date" id="event-date" required />
+          </div>
+          <div class="form-group">
+            <label for="event-description">Description:</label>
+            <textarea id="event-description" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="ticket-price">Ticket Price:</label>
+            <input type="number" id="ticket-price" required />
+          </div>
+          <button type="submit">Create Event</button>
+        </form>
+      </section>
+
+      <!-- Discover Events Section -->
+      <section id="discover">
+        <h2>Discover Events</h2>
+        <div id="events-feed" class="events-feed">
+          <!-- Event cards will be added dynamically here -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Ticket Booking Modal -->
+  <div id="ticket-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-modal" class="close">&times;</span>
+      <h2>Book Ticket</h2>
+      <div id="modal-event-info">
+        <!-- Selected event info will appear here -->
+      </div>
+      <form id="ticket-form">
+        <div class="form-group">
+          <label for="buyer-name">Your Name:</label>
+          <input type="text" id="buyer-name" required />
+        </div>
+        <div class="form-group">
+          <label for="buyer-email">Email:</label>
+          <input type="email" id="buyer-email" required />
+        </div>
+        <button type="submit">Confirm Booking</button>
+      </form>
     </div>
+  </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
